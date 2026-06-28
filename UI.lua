@@ -362,6 +362,7 @@ function MCA:DrawSidebar(root)
     local tabs = {
         {"Riepilogo","summary"},
         {"Player","players"},
+        {"Interrupt","interrupts"},
         {"Deaths","deaths"},
         {"Timeline","timeline"},
         {"Storico","history"},
@@ -1458,5 +1459,13 @@ function MCA:BuildInterruptPage(parent, report)
         self:Text(row, tostring(self:GetInterruptValue(p)), "GameFontNormalSmall", {"LEFT", row, "LEFT", cols[4].x, 0}, cols[4].w, self:UIColor("green"), "CENTER")
 
         y = y - 28
+    end
+end
+
+
+-- MCA 4.1.8 Interrupt tab aliases
+function MCA:BuildInterruptsTab(parent, report)
+    if self.BuildInterruptPage then
+        return self:BuildInterruptPage(parent, report)
     end
 end

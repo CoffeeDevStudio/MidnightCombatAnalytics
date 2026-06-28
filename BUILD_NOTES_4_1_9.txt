@@ -1,0 +1,75 @@
+MCA 4.1.9 Interrupt Sidebar Real Fix
+- Aggiunto realmente {"Interrupt","interrupts"} nella tabella local tabs della sidebar.
+- Aggiunto routing in DrawFullPage verso BuildInterruptPage(content, data).
+- Mantiene cattura Interrupt da Blizzard Damage Meter della 4.1.7/4.1.8.
+
+DrawFullPage snippet:
+function MCA:DrawFullPage(root, data)
+    local _, child, scroll = self:Scroll(root, {"TOPLEFT", root, "TOPLEFT", 154, -112}, 1150, 535, {0.018,0.020,0.022,0.65})
+
+    local titleMap = {summary="Riepilogo", players="Player", deaths="Deaths", timeline="Timeline", history="Storico", settings="Impostazioni"}
+    local title = titleMap[self.activeTab] or "Riepilogo"
+
+    self:Text(child, title, "GameFontHighlightLarge", {"TOPLEFT", child, "TOPLEFT", 16, -12}, 300, self:UIColor("accent"))
+
+    local y = -50
+
+    if self.activeTab == "settings" then
+        local settings = {
+            {"Sync", "syncEnabled"},
+            {"Debug", "debug"},
+            {"ElvUI Skin", "useElvUISkin"},
+            {"Auto Open", "autoOpen"},
+            {"Show Kill", "showAfterKill"},
+            {"Show Wipe", "showAfterWipe"},
+            {"Show M+ End", "showMythicEnd"}
+        }
+
+        for _, s in ipairs(settings) do
+            self:Text(child, s[1]..": "..(MidnightCombatAnalyticsDB.config[s[2]] and "ON" or "OFF"), "GameFontNormal", {"TOPLEFT", child, "TOPLEFT", 20, y}, 200, MidnightCombatAnalyticsDB.config[s[2]] and self:UIColor("green") or self:UIColor("red"))
+            self:Button(child, "Toggle", {"TOPLEFT", child, "TOPLEFT", 240, y+4}, 90, 22, function()
+                MidnightCombatAnalyticsDB.config[s[2]] = not MidnightCombatAnalyticsDB.config[s[2]]
+                MCA:BuildDashboard(data)
+            end)
+            y = y - 36
+        end
+
+    elseif self.activeTab == "players" then
+        local panel = self:Panel(child, {"TOPLEFT", child, "TOPLEFT", 12, y}, 1100, 430)
+        self:DrawPlayerTable(panel, data)
+        y = y - 450
+
+    elseif self.activeTab == "interrupts" then
+        self:BuildInterruptPage(content or page or body or frame, data)
+    elseif self.activeTab == "deaths" then
+        local panel = self:Panel(child, {"TOPLEFT", child, "TOPLEFT", 12, y}, 1100, 430)
+        self:DrawSmallPanel(panel, "Deaths", nil, "red",
+            {{label="Tempo",x=10,w=55},{label="Player",x=75,w=100},{label="Boss",x=190,w=110},{label="Killer",x=320,w=90},{label="HP",x=430,w=60},{label="Def. Attiva",x=510,w=120}},
+            self:BuildDeathsRows(data), "Torna al riepilogo")
+        y = y - 450
+
+    elseif self.activeTab == "buffs" then
+        local panel = self:Panel(child, {"TOPLEFT", child, "TOPLEFT", 12, y}, 1100, 430)
+        self:DrawSmallPanel(panel, "Buff Raid", nil, "purple",
+            {{label="Icona",x=10,w=45},{label="Debuff",x=60,w=180},{label="Player",x=260,w=120},{label="Stack",x=400,w=70},{label="Durata",x=500,w=90}},
+            self:BuildRaidBuffRows(data), "Torna al riepilogo")
+        y = y - 450
+
+    elseif self.activeTab == "timeline" then
+        local panel = self:Panel(child, {"TOPLEFT", child, "TOPLEFT", 12, y}, 1100, 430)
+        self:DrawSmallPanel(panel, "Timeline  (Eventi principali)", nil, "blue",
+            {{label="Tempo",x=10,w=55},{label="Evento",x=75,w=260},{label="Player",x=360,w=120},{label="Boss",x=500,w=130}},
+            self:BuildTimelineRows(data), "Torna al riepilogo")
+        y = y - 450
+
+    elseif self.activeTab == "history" then
+        y = -50 - self:DrawHistoryPage(child)
+
+    else
+        local totals = self:GetTotals(data)
+        local lines = {
+            "Player totali: "..totals.players,
+            "Player con MCA: "..totals.addon.."/"..totals.players,
+            "Difensivi usati: "..totals.cds,
+            "Buff raid presenti: "..totals.buffActive.."/"..totals.buffPresent,
+        

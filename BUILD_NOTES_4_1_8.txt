@@ -1,0 +1,126 @@
+MCA 4.1.8 Interrupt Sidebar Fix
+- Fix: la 4.1.7 aveva aggiunto renderer/dati Interrupt ma non il pulsante reale nella sidebar.
+- Aggiunto collegamento sidebar per activeTab='interrupts'.
+- Aggiunto routing verso BuildInterruptPage().
+- Base: 4.1.7.
+
+Diagnostic snippets:
+
+--- Riepilogo around 12641 ---
+-22}, 55, self:UIColor("accent"))
+    self:Text(side, "v"..(self.VERSION or "?"), "GameFontNormalSmall", {"TOPLEFT", side, "TOPLEFT", 74, -47}, 55, self:UIColor("gray"))
+
+    local tabs = {
+        {"Riepilogo","summary"},
+        {"Player","players"},
+        {"Deaths","deaths"},
+        {"Timeline","timeline"},
+        {"Storico","history"},
+        {"Impostazioni","settings"}
+    }
+
+    local y = -92
+    for _, tab in ipairs(tabs) do
+        local active = self.activeTab == tab[2]
+        loc
+--- Player around 7306 ---
+"Discreto", self:UIColor("orange") end
+    return "Critico", self:UIColor("red")
+end
+
+function MCA:RoleShort(role)
+    return self.RoleLabel[role or "DAMAGER"] or role or "DPS"
+end
+
+function MCA:BuildPlayerList(data)
+    local list = {}
+    for _, p in pairs(data.players or {}) do
+        table.insert(list,p)
+    end
+    table.sort(list, function(a,b)
+        local sa, sb = MCA:GetScore(a), MCA:GetScore(b)
+        if sa == sb then return (a.name or "") < (b.name or "") end
+        return sa > sb
+--- Interrupt around 43487 ---
+el = self:Panel(child, {"TOPLEFT", child, "TOPLEFT", 12, y}, 1100, 430)
+        self:DrawPlayerTable(panel, data)
+        y = y - 450
+
+    elseif self.activeTab == "interrupts" then
+        self:BuildInterruptPage(content or page or body or frame, data)
+    elseif self.activeTab == "deaths" then
+        local panel = self:Panel(child, {"TOPLEFT", child, "TOPLEFT", 12, y}, 1100, 430)
+        self:DrawSmallPanel(panel, "Deaths", nil, "red",
+            {{label="Tempo",x=10,w=55},{label="Player",x=
+--- Deaths around 8315 ---
+     table.insert(windows,{name=data.boss or "Encounter", startTime=0, endTime=data.duration or 0, success=data.result, duration=data.duration or 0})
+    end
+    return windows
+end
+
+function MCA:CountDeathsInWindow(data, startTime, endTime)
+    local count = 0
+    for _, p in pairs(data.players or {}) do
+        if p.deathTime and p.deathTime >= (startTime or 0) and p.deathTime <= (endTime or 0) then
+            count = count + (p.deaths or 1)
+        end
+    end
+    return count
+end
+
+function M
+--- Timeline around 12733 ---
+ormalSmall", {"TOPLEFT", side, "TOPLEFT", 74, -47}, 55, self:UIColor("gray"))
+
+    local tabs = {
+        {"Riepilogo","summary"},
+        {"Player","players"},
+        {"Deaths","deaths"},
+        {"Timeline","timeline"},
+        {"Storico","history"},
+        {"Impostazioni","settings"}
+    }
+
+    local y = -92
+    for _, tab in ipairs(tabs) do
+        local active = self.activeTab == tab[2]
+        local b = CreateFrame("Button", nil, side, "BackdropTemplate")
+        b:SetPoint("TOPLEFT", 8,
+--- Storico around 12766 ---
+OPLEFT", 74, -47}, 55, self:UIColor("gray"))
+
+    local tabs = {
+        {"Riepilogo","summary"},
+        {"Player","players"},
+        {"Deaths","deaths"},
+        {"Timeline","timeline"},
+        {"Storico","history"},
+        {"Impostazioni","settings"}
+    }
+
+    local y = -92
+    for _, tab in ipairs(tabs) do
+        local active = self.activeTab == tab[2]
+        local b = CreateFrame("Button", nil, side, "BackdropTemplate")
+        b:SetPoint("TOPLEFT", 8, y)
+        b:SetSize(122, 34)
+  
+--- Impostazioni around 12797 ---
+olor("gray"))
+
+    local tabs = {
+        {"Riepilogo","summary"},
+        {"Player","players"},
+        {"Deaths","deaths"},
+        {"Timeline","timeline"},
+        {"Storico","history"},
+        {"Impostazioni","settings"}
+    }
+
+    local y = -92
+    for _, tab in ipairs(tabs) do
+        local active = self.activeTab == tab[2]
+        local b = CreateFrame("Button", nil, side, "BackdropTemplate")
+        b:SetPoint("TOPLEFT", 8, y)
+        b:SetSize(122, 34)
+        self:SetBackdropSolid(b, 
