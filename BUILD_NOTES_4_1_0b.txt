@@ -1,0 +1,18 @@
+MCA 4.1.0b SyntaxHotfix
+- Rimosso residuo isolato 'e' in RaidBuffWindow.lua che causava '=' expected near 'end'.
+- Rimosse eventuali chiamate residue PolishRaidBuffWindowWidths inserite male.
+- Build pensata per ripristinare il caricamento addon.
+
+Excerpt corretto intorno alla riga segnalata:
+137:     local buffs, matrix = self:CaptureRaidBuffs()
+138:     self.liveRaidBuffs = buffs or {}
+139:     self.liveRaidBuffMatrix = matrix or { buffs = {}, players = {} }
+140: 
+141:     self:BuildRaidBuffWindow(self.liveRaidBuffMatrix)
+142:     self:StartRaidBuffLiveTracking()
+143: 
+144: end
+145: function MCA:RefreshRaidBuffWindowLive()
+146:     if InCombatLockdown and InCombatLockdown() then
+147:         self:StopRaidBuffLiveTracking(true)
+148:         return

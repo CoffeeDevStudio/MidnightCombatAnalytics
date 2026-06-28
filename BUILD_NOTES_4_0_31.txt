@@ -1,0 +1,6 @@
+MCA 4.0.31 Rebuilt
+- Ripartita dalla 4.0.30 stabile.
+- Aggiunta cattura Interrupts da Blizzard Damage Meter: Enum.DamageMeterType.Interrupts.
+- Aggiunta nuova pagina/tab Interrupt con elenco player/classe/interrupt.
+- Player tab aggiornata in modo conservativo: Score -> DPS/HPS, Stato -> Interrupt.
+- Nessuna patch automatica aggressiva dentro tabelle Lua.

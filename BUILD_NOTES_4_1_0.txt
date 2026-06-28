@@ -1,0 +1,7 @@
+MCA 4.1.0 UI Polish
+- Base: 4.0.30 stabile.
+- Correzione spazi vuoti nelle tabelle, con focus su Raid Buff Check.
+- Raid Buff Check usa più larghezza fino vicino alla scrollbar.
+- Aggiunti helper UI per calcolare larghezze interne e stretch dei frame.
+- Mantiene integrazione DPS/HPS Blizzard e fix Boss Breakdown 4.0.30.
+- Non include la 4.0.31 incompleta sugli Interrupt.

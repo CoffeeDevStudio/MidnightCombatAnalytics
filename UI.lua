@@ -1334,3 +1334,32 @@ function MCA:ShowUI(data)
     self:BuildDashboard(data)
 end
 
+
+
+-- ============================================================================
+-- MCA 4.1.0 UI Polish helpers
+-- ============================================================================
+
+function MCA:GetInnerTableWidth(parent, fallback, rightPadding)
+    fallback = fallback or 1000
+    rightPadding = rightPadding or 34
+
+    if parent and parent.GetWidth then
+        local w = parent:GetWidth()
+        if w and w > 0 then
+            return math.max(w - rightPadding, 320)
+        end
+    end
+
+    return fallback
+end
+
+function MCA:StretchFrameToScrollbar(frame, parent, leftPadding, rightPadding)
+    if not frame or not parent then return end
+    leftPadding = leftPadding or 8
+    rightPadding = rightPadding or 34
+
+    frame:ClearAllPoints()
+    frame:SetPoint("TOPLEFT", parent, "TOPLEFT", leftPadding, -8)
+    frame:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -rightPadding, 8)
+end

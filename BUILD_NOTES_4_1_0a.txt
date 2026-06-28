@@ -1,0 +1,18 @@
+MCA 4.1.0a Hotfix
+- Corretto errore di sintassi in RaidBuffWindow.lua: '=' expected near 'if'.
+- Rimossa la patch automatica di width polish che era finita dentro una tabella Lua.
+- Versione hotfix caricabile; mantiene la base 4.1.0 senza il codice che rompeva il load.
+
+Excerpt originale intorno alla riga segnalata:
+139:     self.liveRaidBuffMatrix = matrix or { buffs = {}, players = {} }
+140: 
+141:     self:BuildRaidBuffWindow(self.liveRaidBuffMatrix)
+142:     self:StartRaidBuffLiveTracking()
+143: e
+144:     if self.PolishRaidBuffWindowWidths then self:PolishRaidBuffWindowWidths() end
+145: end
+146: function MCA:RefreshRaidBuffWindowLive()
+147:     if InCombatLockdown and InCombatLockdown() then
+148:         self:StopRaidBuffLiveTracking(true)
+149:         return
+150:     end

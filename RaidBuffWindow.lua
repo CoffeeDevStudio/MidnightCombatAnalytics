@@ -140,8 +140,8 @@ function MCA:ShowRaidBuffWindow()
 
     self:BuildRaidBuffWindow(self.liveRaidBuffMatrix)
     self:StartRaidBuffLiveTracking()
-end
 
+end
 function MCA:RefreshRaidBuffWindowLive()
     if InCombatLockdown and InCombatLockdown() then
         self:StopRaidBuffLiveTracking(true)
@@ -155,8 +155,8 @@ function MCA:RefreshRaidBuffWindowLive()
     if self.RaidBuffFrame and self.RaidBuffFrame:IsShown() then
         self:RedrawRaidBuffMatrix(self.liveRaidBuffMatrix)
     end
-end
 
+end
 function MCA:BuildRaidBuffWindow(matrix)
     if self.RaidBuffFrame then
         self.RaidBuffFrame:Hide()
@@ -205,8 +205,8 @@ function MCA:BuildRaidBuffWindow(matrix)
     end)
 
     f:Show()
-end
 
+end
 function MCA:BuffStatusIcon(parent, x, y, size, hasBuff)
     local tex = parent:CreateTexture(nil, "ARTWORK")
     tex:SetPoint("TOPLEFT", x, y)
@@ -378,3 +378,5 @@ function MCA:DrawRaidBuffMatrixContent(child, scroll, matrix, width)
 
     self:UpdateScrollBar(child, scroll, math.abs(y) + 48)
 end
+
+
