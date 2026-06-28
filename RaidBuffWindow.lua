@@ -165,7 +165,7 @@ function MCA:BuildRaidBuffWindow(matrix)
     end
 
     local f = CreateFrame("Frame", "MCARaidBuffFrame", UIParent, "BackdropTemplate")
-    f:SetSize(1180, 640)
+    f:SetSize(944, 640)
     f:SetPoint("CENTER")
     f:SetFrameStrata("DIALOG")
     f:SetFrameLevel(120)

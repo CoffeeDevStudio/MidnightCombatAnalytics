@@ -1,0 +1,5 @@
+MCA 4.1.1 Raid Buff Check Width
+- Base: 4.1.0b.
+- Ridotta del 20% la larghezza della finestra Raid Buff Check.
+- Ridotte coerentemente le larghezze fisse interne derivate dalla 4.1.0.
+- Nessuna iniezione di codice runtime: solo valori SetSize/SetWidth.
