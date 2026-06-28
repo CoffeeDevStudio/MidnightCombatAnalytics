@@ -7,13 +7,13 @@ _G.MCA = MCA
 -- Temporary compatibility alias for old external references during transition.
 _G.MDR = _G.MDR or MCA
 
-MCA.VERSION = "4.1.3"
+MCA.VERSION = "4.1.6"
 MCA.PREFIX = "MCA40"
 
 _G.MCA = _G.MCA or {}
 MCA = _G.MCA
 
-MCA.VERSION = "4.1.3"
+MCA.VERSION = "4.1.6"
 MCA.PREFIX = "MCA40"
 
 MCA.session = nil

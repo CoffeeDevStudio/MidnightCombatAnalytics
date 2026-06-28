@@ -1,0 +1,5 @@
+MCA 4.1.6 SecretStringHotfix
+- Fix errore wipe: attempt to compare local 'short' (a secret string value).
+- NormalizeDamageMeterName ora converte i nomi Damage Meter con pcall(tostring).
+- Evitati confronti diretti su secret string provenienti da C_DamageMeter.
+- Mantiene ClassBasedRating della 4.1.5.

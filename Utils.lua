@@ -113,3 +113,83 @@ function MCA:SafeOpenReport(report)
         C_Timer.After(0.5, openReport)
     end
 end
+
+
+-- ============================================================================
+-- MCA 4.1.4 Class-based rating
+-- Rating is normalized against the best player of the same class and same metric.
+-- DPS/Tank compare DPS inside their class. Healers compare HPS inside their class.
+-- ============================================================================
+
+function MCA:IsHealerPlayer(player)
+    local role = tostring(player and (player.role or player.ruolo or player.Role or "") or ""):lower()
+    return role:find("heal") ~= nil
+end
+
+function MCA:GetPlayerClassKey(player)
+    if not player then return "UNKNOWN" end
+    return tostring(player.class or player.classFilename or player.className or player.localizedClass or "UNKNOWN"):upper()
+end
+
+function MCA:GetClassRatingMetric(player)
+    if self:IsHealerPlayer(player) then
+        return "hps"
+    end
+    return "dps"
+end
+
+function MCA:GetClassRatingValue(player)
+    if not player then return 0 end
+
+    if self:GetClassRatingMetric(player) == "hps" then
+        return tonumber(player.blizzardHps or player.hps or player.healingPerSecond or 0) or 0
+    end
+
+    return tonumber(player.blizzardDps or player.dps or player.damagePerSecond or player.amountPerSecond or 0) or 0
+end
+
+function MCA:ApplyClassBasedRatings(report)
+    if not report or type(report.players) ~= "table" then return end
+
+    local bestByClassMetric = {}
+
+    for _, player in ipairs(report.players) do
+        local value = self:GetClassRatingValue(player)
+        local classKey = self:GetPlayerClassKey(player)
+        local metric = self:GetClassRatingMetric(player)
+        local key = classKey .. ":" .. metric
+
+        if value and value > 0 then
+            bestByClassMetric[key] = math.max(bestByClassMetric[key] or 0, value)
+        end
+    end
+
+    for _, player in ipairs(report.players) do
+        local value = self:GetClassRatingValue(player)
+        local classKey = self:GetPlayerClassKey(player)
+        local metric = self:GetClassRatingMetric(player)
+        local key = classKey .. ":" .. metric
+        local best = bestByClassMetric[key] or 0
+
+        if best > 0 and value and value > 0 then
+            local rating = math.floor((value / best) * 100 + 0.5)
+            if rating > 100 then rating = 100 end
+
+            player.rating = rating
+            player.score = rating
+            player.classRating = rating
+            player.ratingMode = "class"
+        elseif best == 0 then
+            local fallback = tonumber(player.rating or player.score or 75) or 75
+            player.rating = fallback
+            player.score = fallback
+            player.classRating = fallback
+            player.ratingMode = "fallback"
+        else
+            player.rating = 0
+            player.score = 0
+            player.classRating = 0
+            player.ratingMode = "class"
+        end
+    end
+end

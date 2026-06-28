@@ -197,14 +197,24 @@ function MCA:GetDamageMeterSourceValue(source, keys)
 end
 
 function MCA:NormalizeDamageMeterName(name)
-    if not name then return nil end
-    if Ambiguate then
-        local ok, short = pcall(Ambiguate, name, "short")
-        if ok and short and short ~= "" then return short end
-    end
-    return tostring(name):match("^[^-]+") or tostring(name)
-end
+    -- MCA 4.1.6:
+    -- C_DamageMeter can return player names as protected/secret strings.
+    -- Direct comparisons on derived values can taint and fail, so avoid
+    -- comparing the protected value itself. Convert with pcall first.
+    if name == nil then return nil end
 
+    local ok, plain = pcall(tostring, name)
+    if not ok or plain == nil then
+        return nil
+    end
+
+    local okShort, short = pcall(strsplit, "-", plain)
+    if okShort and short ~= nil then
+        return tostring(short)
+    end
+
+    return tostring(plain)
+end
 function MCA:FindSessionPlayerByDamageMeterSource(source)
     if not self.session or not source then return nil end
 
@@ -525,6 +535,7 @@ end
 
 
 function MCA:SaveReportToHistory(report)
+    if self.ApplyClassBasedRatings then self:ApplyClassBasedRatings(report) end
     if not report then return end
 
     MidnightCombatAnalyticsDB.history = MidnightCombatAnalyticsDB.history or {}

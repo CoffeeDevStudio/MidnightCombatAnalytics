@@ -1,0 +1,6 @@
+MCA 4.1.4 ClassBasedRating
+- Rating DPS/Tank normalizzato sul miglior DPS della stessa classe nel gruppo.
+- Rating Healer normalizzato sul miglior HPS della stessa classe nel gruppo.
+- Se non ci sono valori Blizzard disponibili, mantiene fallback rating precedente.
+- Ricalcolo applicato dopo CaptureDamageMeterStats e all'apertura report.
+- Base: 4.1.3.

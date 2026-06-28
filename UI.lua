@@ -1295,6 +1295,10 @@ end
 
 -- MCA 4.0.29d restored real dashboard opener from 4.0.28
 function MCA:BuildDashboard(data)
+    -- MCA 4.1.5: enforce class ratings before rendering
+    if self.ApplyClassBasedRatings and data then self:ApplyClassBasedRatings(data) end
+    -- MCA 4.1.4: recalc class based ratings on report open
+    if self.ApplyClassBasedRatings and data then self:ApplyClassBasedRatings(data) end
     if not data then return end
     self.lastReport = data
 
@@ -1362,4 +1366,10 @@ function MCA:StretchFrameToScrollbar(frame, parent, leftPadding, rightPadding)
     frame:ClearAllPoints()
     frame:SetPoint("TOPLEFT", parent, "TOPLEFT", leftPadding, -8)
     frame:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -rightPadding, 8)
+end
+
+
+-- MCA 4.1.5 class-rating UI helpers
+function MCA:GetDisplayRating(player)
+    return tonumber(player and (player.classRating or player.rating or player.score) or 0) or 0
 end

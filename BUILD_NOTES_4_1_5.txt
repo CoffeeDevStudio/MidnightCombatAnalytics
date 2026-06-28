@@ -1,0 +1,6 @@
+MCA 4.1.5 ClassBasedRating Summary Fix
+- Fix riepilogo DPS/Healer: rating ora usa il confronto per classe.
+- ApplyClassBasedRatings scrive rating, score e classRating insieme.
+- La UI usa GetDisplayRating(player), dando priorità a classRating.
+- Esempio: Warlock confrontati solo con Warlock, Mage solo con Mage, healer per HPS e classe.
+- Base: 4.1.4.
