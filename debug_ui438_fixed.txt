@@ -1,8 +1,0 @@
-435: 
-436: function MCA:DrawTopDashboard(root, data)
-437:     local info = self:Panel(root, {"TOPLEFT", root, "TOPLEFT", 154, -36}, 290, 64, {0.018,0.021,0.024,0.50})
-438:     self:Text(info, data.boss or "Report", "GameFontHighlightLarge", {"TOPLEFT", info, "TOPLEFT", 16, -9}, 150, self:UIColor("purple"))
-439:     self:Text(info, (data.result and "Completato" or "Wipe")..": "..date("%d/%m/%Y %H:%M"), "GameFontNormal", {"TOPLEFT", info, "TOPLEFT", 16, -36}, 220, self:UIColor("green"))
-440: 
-441:     local totals = self:GetTotals(data)
-442:     local kpis = self:Panel(root, {"TOPLEFT", root, "TOPLEFT", 466, -36}, 630, 64, {0.018,0.021,0.024,0.72})

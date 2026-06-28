@@ -1,0 +1,8 @@
+MCA 4.2.8 FinalClassOnlyRating
+- Rating calcolato solo per classe, non per spec.
+- Miglior DPS di ogni classe prende 99.
+- Gli altri DPS della stessa classe sono scalati rispetto al miglior DPS della loro classe.
+- Healer: stessa logica su HPS, sempre per classe.
+- Classe singola con valore meter > 0 prende 99.
+- Il rating viene ricalcolato dopo BuildReport e anche all'apertura dei report storici.
+- Base: 4.2.7.

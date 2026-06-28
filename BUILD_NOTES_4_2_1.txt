@@ -1,7 +1,0 @@
-MCA 4.2.1 SecretGUIDOnlyHotfix
-- Fix raro post-wipe causato da secret string nel Blizzard Damage Meter.
-- Matching del Damage Meter solo via sourceGUID/guid/unitGUID.
-- Se una source non ha GUID viene saltata senza rompere il report.
-- Rimossi fallback e salvataggi basati sul nome protetto della source.
-- Applicato anche all'overall Mythic+ e agli interrupt.
-- Base: 4.2.0.

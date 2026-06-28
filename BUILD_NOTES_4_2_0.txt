@@ -1,7 +1,0 @@
-MCA 4.2.0 MythicPlusOverallMeter
-- Mythic+: DPS/HPS/Interrupt presi dall'overall della chiave.
-- Raid: resta sul singolo encounter.
-- Overall selezionato cercando la sessione Blizzard Damage Meter con durata maggiore.
-- Interrupt salvati su player.blizzardInterrupts/player.interrupts.
-- Tab Interrupt mostra tutti i player anche se hanno 0 interrupt.
-- Base: 4.1.9.

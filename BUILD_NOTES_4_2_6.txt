@@ -1,0 +1,7 @@
+MCA 4.2.6 Rebased418MythicPlusOverall
+- Rebase dalla 4.1.8, ultima base stabile per DPS/HPS.
+- Non include le modifiche 4.2.1-4.2.5 su GUID/secret/matching.
+- Matching e parsing DPS/HPS restano quelli originali funzionanti della 4.1.8.
+- Mythic+: aggiunto solo supporto overall DPS/HPS scegliendo la sessione Blizzard con durata maggiore.
+- Raid: resta encounter-based come prima.
+- Interrupt meter disabilitato temporaneamente.

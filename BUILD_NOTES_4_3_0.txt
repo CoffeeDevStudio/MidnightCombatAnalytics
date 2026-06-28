@@ -1,0 +1,7 @@
+MCA 4.3.0 ForceClassOnlyRating
+- Fix: il riepilogo stava ancora usando rating globale.
+- GetScore ora ritorna sempre classRating/rating calcolato per classe.
+- Miglior DPS/HPS di ogni classe = 99.
+- Player della stessa classe scalati rispetto al migliore della stessa classe.
+- DPS/HPS assente o 0 = rating 0.
+- Ricalcolo forzato dopo BuildReport e prima del render UI.

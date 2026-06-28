@@ -1,0 +1,7 @@
+MCA 4.3.1 HealerGlobalRating
+- DPS/Tank: rating resta per classe.
+- Healer: rating ora globale tra tutti gli healer usando HPS.
+- Miglior healer globale = 99.
+- Gli altri healer sono scalati rispetto al miglior HPS globale.
+- DPS/HPS assente o 0 = rating 0.
+- Base: 4.3.0.

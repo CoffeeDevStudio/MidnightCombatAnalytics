@@ -1,0 +1,5 @@
+MCA 4.3.6 MythicPlusTotalDeathsHeader
+- Mythic+: le morti del report sono il totale dell'intera chiave.
+- Mythic+: nel top header il box CD Usati diventa Morti Totali.
+- Il valore Morti Totali usa la somma delle morti dei player della run.
+- Raid: mantiene CD Usati e comportamento precedente.

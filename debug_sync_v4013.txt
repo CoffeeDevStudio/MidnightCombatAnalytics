@@ -1,3 +1,0 @@
-Has preserved SplitMessage: True
-Has SendAddonMulti: True
-Has delayed snapshot: True

@@ -1,5 +1,0 @@
-523: function MCA:DrawPlayerTable(parent, data)
-621:         {label="CD", x=365, w=34, justify="CENTER"},
-667:         {label="CD", x=262, w=35, justify="CENTER"},
-772:             elseif title and (title:find("Difensive") or title:find("Defensive") or title:find("My Defensives")) then
-1123:     self:DrawSmallPanel(defensivePanel, "My Defensives", nil, "blue",

@@ -1,0 +1,7 @@
+MCA 4.3.3 StrictZeroRatingNoMeter
+- Fix definitivo UI/rating: se DPS/HPS è assente, 0 o visualizzato come '-', il rating è 0.
+- Nessun fallback a 75/100 per valori mancanti.
+- Le morti non influiscono sul rating.
+- DPS/Tank: rating per classe.
+- Healer: rating globale su HPS.
+- Ricalcolo forzato dopo BuildReport e prima del render UI.

@@ -219,7 +219,7 @@ function MCA:BuildPlayerList(data)
         table.insert(list,p)
     end
     table.sort(list, function(a,b)
-        local sa, sb = MCA:GetScore(a), MCA:GetScore(b)
+        local sa, sb = MCA:GetDisplayRating(a), MCA:GetDisplayRating(b)
         if sa == sb then return (a.name or "") < (b.name or "") end
         return sa > sb
     end)
@@ -362,7 +362,6 @@ function MCA:DrawSidebar(root)
     local tabs = {
         {"Riepilogo","summary"},
         {"Player","players"},
-        {"Interrupt","interrupts"},
         {"Deaths","deaths"},
         {"Timeline","timeline"},
         {"Storico","history"},
@@ -473,7 +472,7 @@ function MCA:DrawTopDashboard(root, data)
         {"Boss", totals.bossKilled.."/"..totals.bosses, self:UIColor("accent")},
         {"Durata", self:FormatTime(data.duration or 0), self:UIColor("accent")},
         {"Deaths", tostring(totals.deaths), self:UIColor("red")},
-        {"CD Usati", tostring(totals.cds), self:UIColor("green")},
+        {self:GetHeaderCdOrDeathsLabel(data), tostring(totals.cds), self:UIColor("green")},
         {"Buff Raid", tostring(totals.buffActive or 0).."/"..tostring(totals.buffPresent or 0), self:UIColor((totals.buffMissing or 0) > 0 and "orange" or "green")},
         {"Punteggio", self:ComputeRaidScore(data).."%", self:UIColor("green")}
     }
@@ -572,7 +571,7 @@ function MCA:DrawPlayerTable(parent, data)
         self:Text(row, self:RoleShort(p.role), "GameFontNormalSmall", {"LEFT", row, "LEFT", 314, 0}, 58, self:UIColor("white"), "CENTER")
         self:Text(row, tostring(p.deaths or 0), "GameFontNormal", {"LEFT", row, "LEFT", 382, 0}, 46, (p.deaths or 0) > 0 and self:UIColor("red") or self:UIColor("white"), "CENTER")
 
-        local score = self:GetScore(p)
+        local score = self:GetDisplayRating(p)
         local status, color = self:StatusForScore(score)
         local shortStatus = status == "Ottimo" and "OK" or (status == "Buono" and "Good" or (status == "Discreto" and "Watch" or "Crit"))
 
@@ -697,7 +696,7 @@ function MCA:DrawBossDetail(parent, data)
         self:Text(row, tostring(cds), "GameFontNormal", {"LEFT", row, "LEFT", 262, 0}, 35, self:UIColor("white"), "CENTER")
         self:Text(row, tostring(#(p.debuffs or {})), "GameFontNormal", {"LEFT", row, "LEFT", 312, 0}, 48, self:UIColor("white"), "CENTER")
 
-        local score = self:GetScore(p)
+        local score = self:GetDisplayRating(p)
         local _, c = self:StatusForScore(score)
         self:Text(row, score.."%", "GameFontNormal", {"LEFT", row, "LEFT", 380, 0}, 50, c, "CENTER")
 
@@ -1239,7 +1238,10 @@ function MCA:DrawRoleMetricTable(parent, data, title, wantHealer)
 end
 
 function MCA:DrawDashboardPage(root, data)
-    -- v4.0.16 dashboard:
+    
+    -- MCA 4.3.4 force ratings in DrawDashboardPage
+    if self.ApplyClassBasedRatings and data then self:ApplyClassBasedRatings(data) end
+-- v4.0.16 dashboard:
     -- Top row: DPS/Tank table left, Healer/HPS table right.
     -- Bottom row: Deaths, Timeline, Boss Breakdown.
     local leftX, totalW = 154, 1152
@@ -1303,6 +1305,19 @@ function MCA:BuildDashboard(data)
     -- MCA 4.1.4: recalc class based ratings on report open
     if self.ApplyClassBasedRatings and data then self:ApplyClassBasedRatings(data) end
     if not data then return end
+
+    -- MCA 4.3.6 apply M+ deaths before dashboard render
+    if self.ApplyMythicPlusTotalDeaths then self:ApplyMythicPlusTotalDeaths(data) end
+
+    -- MCA 4.3.3 strict meter rating before render
+    if self.ApplyClassBasedRatings then self:ApplyClassBasedRatings(data) end
+
+    -- MCA 4.3.0 force class ratings before any UI render
+    if self.ApplyClassBasedRatings then self:ApplyClassBasedRatings(data) end
+
+    -- MCA 4.2.8: enforce final class-only ratings before rendering
+    if self.ApplyClassBasedRatings then self:ApplyClassBasedRatings(data) end
+
     self.lastReport = data
 
     local old = _G.MCAFrame
@@ -1374,7 +1389,12 @@ end
 
 -- MCA 4.1.5 class-rating UI helpers
 function MCA:GetDisplayRating(player)
-    return tonumber(player and (player.classRating or player.rating or player.score) or 0) or 0
+    if not player then return 0 end
+    local r=tonumber(player.classRating or player.rating or player.score or 0) or 0
+    local d=tonumber(player.blizzardDps or player.dps or player.fightDPS or player.amountPerSecond or 0) or 0
+    local h=tonumber(player.blizzardHps or player.hps or player.fightHPS or player.healingPerSecond or 0) or 0
+    if d<=0 and h<=0 then return 0 end
+    return r
 end
 
 
@@ -1386,6 +1406,8 @@ function MCA:BuildInterruptPage(parent, report)
     if not parent then return end
 
     self:Text(parent, "Interrupt", "GameFontNormalLarge", {"TOPLEFT", parent, "TOPLEFT", 14, -12}, 180, self:UIColor("accent"))
+    -- MCA 4.2.6 interrupt disabled notice
+    self:Text(parent, "Interrupt temporaneamente disabilitati: build rebased su DPS/HPS stabile.", "GameFontNormalSmall", {"TOPLEFT", parent, "TOPLEFT", 120, -16}, 560, self:UIColor("orange"))
 
     local list = self:GetSortedInterruptPlayers(report)
 
@@ -1468,4 +1490,82 @@ function MCA:BuildInterruptsTab(parent, report)
     if self.BuildInterruptPage then
         return self:BuildInterruptPage(parent, report)
     end
+end
+
+
+-- MCA 4.2.8 display rating helper in UI
+function MCA:GetDisplayRating(player)
+    if not player then return 0 end
+    local r=tonumber(player.classRating or player.rating or player.score or 0) or 0
+    local d=tonumber(player.blizzardDps or player.dps or player.fightDPS or player.amountPerSecond or 0) or 0
+    local h=tonumber(player.blizzardHps or player.hps or player.fightHPS or player.healingPerSecond or 0) or 0
+    if d<=0 and h<=0 then return 0 end
+    return r
+end
+
+
+-- MCA 4.3.3 strict UI display rating override
+function MCA:GetDisplayRating(player)
+    if not player then return 0 end
+    local isHealer = tostring(player.role or player.ruolo or player.Role or ""):lower():find("heal") ~= nil
+    local value = 0
+    if isHealer then
+        value = tonumber(player.blizzardHps or player.hps or player.fightHPS or player.healingPerSecond or 0) or 0
+    else
+        value = tonumber(player.blizzardDps or player.dps or player.fightDPS or player.damagePerSecond or player.amountPerSecond or 0) or 0
+    end
+    if value <= 0 then return 0 end
+    return tonumber(player.classRating or player.rating or player.score or 0) or 0
+end
+
+
+-- ============================================================================
+-- MCA 4.3.4 strict summary rating helpers
+-- Summary rows must never use stale row.score/rating fallbacks.
+-- ============================================================================
+
+function MCA:GetSummaryRatingForPlayer(player)
+    if not player then return 0 end
+    if self.ApplyClassBasedRatings and self.lastReport then
+        self:ApplyClassBasedRatings(self.lastReport)
+    end
+    return self:GetDisplayRating(player)
+end
+
+function MCA:GetPlayerMeterValueForDisplay(player, metric)
+    if not player then return 0 end
+    if metric == "hps" then
+        return tonumber(player.blizzardHps or player.hps or player.fightHPS or player.healingPerSecond or 0) or 0
+    end
+    return tonumber(player.blizzardDps or player.dps or player.fightDPS or player.damagePerSecond or player.amountPerSecond or 0) or 0
+end
+
+function MCA:GetStrictRatingText(player, metric)
+    local value = self:GetPlayerMeterValueForDisplay(player, metric)
+    if not value or value <= 0 then return "0" end
+    return tostring(self:GetDisplayRating(player))
+end
+
+
+-- ============================================================================
+-- MCA 4.3.6 Mythic+ header helpers
+-- ============================================================================
+
+function MCA:GetHeaderDeathsValue(data)
+    if self.ApplyMythicPlusTotalDeaths then self:ApplyMythicPlusTotalDeaths(data) end
+    return tonumber(data and (data.totalDeaths or data.deaths or data.mplusDeathsTotal or 0) or 0) or 0
+end
+
+function MCA:GetHeaderCdOrDeathsLabel(data)
+    if self.IsMythicPlusData and self:IsMythicPlusData(data) then
+        return "Morti Totali"
+    end
+    return self:GetHeaderCdOrDeathsLabel(data)
+end
+
+function MCA:GetHeaderCdOrDeathsValue(data)
+    if self.IsMythicPlusData and self:IsMythicPlusData(data) then
+        return self:GetHeaderDeathsValue(data)
+    end
+    return tonumber(data and (self:GetHeaderCdOrDeathsValue(data)) or 0) or 0
 end

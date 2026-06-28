@@ -1,6 +1,0 @@
-MCA 4.0.26 DamageMeterCombatSourcesDeepDump
-- Deep dumps session.combatSources entries from C_DamageMeter.
-- Focuses on DamageDone, Dps, HealingDone, Hps.
-- Dumps Overall/Current/Expired sessions and last available session IDs.
-- Expands up to 10 combat sources with depth 5 to reveal source fields.
-- Saves output into SavedVariables text log fields from 4.0.25.

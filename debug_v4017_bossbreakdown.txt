@@ -1,6 +1,0 @@
-        {label="Score", x=438, w=58, justify="CENTER"},
-        self:Text(row, score.."%", "GameFontNormal", {"LEFT", row, "LEFT", 438, 0}, 58, color, "CENTER")
-        {label="CD", x=262, w=35, justify="CENTER"},
-        {label="Score", x=380, w=50, justify="CENTER"}
-        self:Text(row, tostring(cds), "GameFontNormal", {"LEFT", row, "LEFT", 262, 0}, 35, self:UIColor("white"), "CENTER")
-        self:Text(row, score.."%", "GameFontNormal", {"LEFT", row, "LEFT", 380, 0}, 50, c, "CENTER")

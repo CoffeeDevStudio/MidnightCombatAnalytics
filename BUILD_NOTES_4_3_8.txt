@@ -1,0 +1,3 @@
+MCA 4.3.8 CleanMinimapMenu
+- Rimossi dal menu minimappa i pulsanti Debug, Sync, Auto Open, ElvUI Skin e Nascondi bottone minimappa.
+- Base: 4.3.6 rollback stabile.

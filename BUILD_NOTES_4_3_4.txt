@@ -1,0 +1,6 @@
+MCA 4.3.4 SummaryRatingBuilderFix
+- Fix: la tabella riepilogo usava ancora rating/score precomputati nelle righe.
+- La UI ora usa GetDisplayRating(player) per la colonna Rating.
+- Se DPS/HPS del player è assente o 0, GetDisplayRating restituisce sempre 0.
+- Le morti non vengono considerate nel rating.
+- DPS/Tank resta per classe; Healer resta globale su HPS.

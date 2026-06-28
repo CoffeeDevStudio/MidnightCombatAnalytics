@@ -1,0 +1,7 @@
+MCA 4.2.7 SafeMeterSourceSkip
+- Fix errore: players[source.name] con secret string.
+- FindSessionPlayerByDamageMeterSource non indicizza più direttamente con valori Blizzard protetti.
+- Ogni combatSource viene processata dentro pcall; se è protetta viene saltata senza crash.
+- DPS/HPS vengono applicati per le source leggibili.
+- Mythic+ overall temporaneamente disabilitato per stabilizzare DPS/HPS.
+- Interrupt meter resta disabilitato.

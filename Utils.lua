@@ -121,80 +121,6 @@ end
 -- DPS/Tank compare DPS inside their class. Healers compare HPS inside their class.
 -- ============================================================================
 
-function MCA:IsHealerPlayer(player)
-    local role = tostring(player and (player.role or player.ruolo or player.Role or "") or ""):lower()
-    return role:find("heal") ~= nil
-end
-
-function MCA:GetPlayerClassKey(player)
-    if not player then return "UNKNOWN" end
-    return tostring(player.class or player.classFilename or player.className or player.localizedClass or "UNKNOWN"):upper()
-end
-
-function MCA:GetClassRatingMetric(player)
-    if self:IsHealerPlayer(player) then
-        return "hps"
-    end
-    return "dps"
-end
-
-function MCA:GetClassRatingValue(player)
-    if not player then return 0 end
-
-    if self:GetClassRatingMetric(player) == "hps" then
-        return tonumber(player.blizzardHps or player.hps or player.healingPerSecond or 0) or 0
-    end
-
-    return tonumber(player.blizzardDps or player.dps or player.damagePerSecond or player.amountPerSecond or 0) or 0
-end
-
-function MCA:ApplyClassBasedRatings(report)
-    if not report or type(report.players) ~= "table" then return end
-
-    local bestByClassMetric = {}
-
-    for _, player in ipairs(report.players) do
-        local value = self:GetClassRatingValue(player)
-        local classKey = self:GetPlayerClassKey(player)
-        local metric = self:GetClassRatingMetric(player)
-        local key = classKey .. ":" .. metric
-
-        if value and value > 0 then
-            bestByClassMetric[key] = math.max(bestByClassMetric[key] or 0, value)
-        end
-    end
-
-    for _, player in ipairs(report.players) do
-        local value = self:GetClassRatingValue(player)
-        local classKey = self:GetPlayerClassKey(player)
-        local metric = self:GetClassRatingMetric(player)
-        local key = classKey .. ":" .. metric
-        local best = bestByClassMetric[key] or 0
-
-        if best > 0 and value and value > 0 then
-            local rating = math.floor((value / best) * 100 + 0.5)
-            if rating > 100 then rating = 100 end
-
-            player.rating = rating
-            player.score = rating
-            player.classRating = rating
-            player.ratingMode = "class"
-        elseif best == 0 then
-            local fallback = tonumber(player.rating or player.score or 75) or 75
-            player.rating = fallback
-            player.score = fallback
-            player.classRating = fallback
-            player.ratingMode = "fallback"
-        else
-            player.rating = 0
-            player.score = 0
-            player.classRating = 0
-            player.ratingMode = "class"
-        end
-    end
-end
-
-
 -- ============================================================================
 -- MCA 4.1.7 Blizzard Interrupt helpers
 -- ============================================================================
@@ -263,4 +189,112 @@ function MCA:CaptureBlizzardInterrupts(report, sessionID)
             end
         end
     end
+end
+
+
+-- ============================================================================
+-- MCA 4.2.8 Final class-only rating
+-- Best player of each class gets 99. Others are scaled only against same class.
+-- DPS/Tank use DPS. Healers use HPS. No spec grouping.
+-- ============================================================================
+
+
+
+
+-- ============================================================================
+-- MCA 4.3.0 Forced class-only rating
+-- This is the single source of truth for rating.
+-- Best DPS/HPS of each class = 99. Missing/zero meter value = 0.
+-- ============================================================================
+
+
+
+-- ============================================================================
+-- MCA 4.3.3 Strict meter-based rating helpers
+-- Deaths do not affect rating. Missing DPS/HPS means rating 0.
+-- ============================================================================
+
+function MCA:IsRatingHealer(player)
+    local role = tostring(player and (player.role or player.ruolo or player.Role or "") or ""):lower()
+    return role:find("heal") ~= nil
+end
+
+function MCA:GetRawMeterValueForRating(player)
+    if not player then return 0 end
+
+    if self:IsRatingHealer(player) then
+        return tonumber(player.blizzardHps or player.hps or player.fightHPS or player.healingPerSecond or 0) or 0
+    end
+
+    return tonumber(player.blizzardDps or player.dps or player.fightDPS or player.damagePerSecond or player.amountPerSecond or 0) or 0
+end
+
+function MCA:GetRatingClassKey(player)
+    if not player then return "UNKNOWN" end
+    return tostring(player.class or player.classFilename or player.className or player.localizedClass or "UNKNOWN"):upper()
+end
+
+function MCA:ApplyClassBasedRatings(report)
+    if not report or type(report.players) ~= "table" then return end
+
+    local maxDpsByClass = {}
+    local maxHpsGlobal = 0
+
+    for _, p in pairs(report.players) do
+        local value = self:GetRawMeterValueForRating(p)
+        if value and value > 0 then
+            if self:IsRatingHealer(p) then
+                if value > maxHpsGlobal then maxHpsGlobal = value end
+            else
+                local classKey = self:GetRatingClassKey(p)
+                if not maxDpsByClass[classKey] or value > maxDpsByClass[classKey] then
+                    maxDpsByClass[classKey] = value
+                end
+            end
+        end
+    end
+
+    for _, p in pairs(report.players) do
+        local value = self:GetRawMeterValueForRating(p)
+        local rating = 0
+
+        if value and value > 0 then
+            local maxValue = 0
+            if self:IsRatingHealer(p) then
+                maxValue = maxHpsGlobal
+            else
+                maxValue = maxDpsByClass[self:GetRatingClassKey(p)] or 0
+            end
+
+            if maxValue and maxValue > 0 then
+                rating = math.floor((value / maxValue) * 99 + 0.5)
+                if rating < 1 then rating = 1 end
+                if rating > 99 then rating = 99 end
+            end
+        end
+
+        p.rating = rating
+        p.score = rating
+        p.classRating = rating
+        p.ratingMode = self:IsRatingHealer(p) and "healer_global_4_3_3" or "dps_class_4_3_3"
+    end
+end
+
+function MCA:GetDisplayRating(player)
+    if not player then return 0 end
+
+    local role = tostring(player.role or player.ruolo or player.Role or ""):lower()
+    local value = 0
+
+    if role:find("heal") then
+        value = tonumber(player.blizzardHps or player.hps or player.fightHPS or player.healingPerSecond or 0) or 0
+    else
+        value = tonumber(player.blizzardDps or player.dps or player.fightDPS or player.damagePerSecond or player.amountPerSecond or 0) or 0
+    end
+
+    if value <= 0 then return 0 end
+    return tonumber(player.classRating or player.rating or player.score or 0) or 0
+end
+function MCA:GetScore(player)
+    return self:GetDisplayRating(player)
 end

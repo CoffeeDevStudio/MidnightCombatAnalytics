@@ -1,0 +1,6 @@
+MCA 4.3.5 DamageMeterLateJoiners
+- Fix roster cambiato durante il pull: player entrati dopo/kick-replace ora possono essere creati/aggiornati dalla source leggibile del Blizzard Damage Meter.
+- Matching tramite nome sicuro del Damage Meter, con pcall per evitare secret string crash.
+- Se la source è protetta/secret viene saltata, ma non blocca le altre source.
+- DPS/HPS dei player leggibili viene applicato anche se non erano nello snapshot iniziale della sessione.
+- Rating ricalcolato dopo l'import dei dati meter.

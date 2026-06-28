@@ -187,7 +187,6 @@ y = self:MinimapMenu_AddButton("Raid Buff Check", y, function()
     y = y - 6
 
     y = self:MinimapMenu_AddButton(
-        "Debug: " .. (MidnightCombatAnalyticsDB.config.debug and "ON" or "OFF"),
         y,
         function()
             MidnightCombatAnalyticsDB.config.debug = not MidnightCombatAnalyticsDB.config.debug
@@ -197,7 +196,6 @@ y = self:MinimapMenu_AddButton("Raid Buff Check", y, function()
     )
 
     y = self:MinimapMenu_AddButton(
-        "Sync: " .. (MidnightCombatAnalyticsDB.config.syncEnabled and "ON" or "OFF"),
         y,
         function()
             MidnightCombatAnalyticsDB.config.syncEnabled = not MidnightCombatAnalyticsDB.config.syncEnabled
@@ -208,7 +206,6 @@ y = self:MinimapMenu_AddButton("Raid Buff Check", y, function()
     )
 
     y = self:MinimapMenu_AddButton(
-        "Auto Open: " .. (MidnightCombatAnalyticsDB.config.autoOpen and "ON" or "OFF"),
         y,
         function()
             MidnightCombatAnalyticsDB.config.autoOpen = not MidnightCombatAnalyticsDB.config.autoOpen
@@ -218,7 +215,6 @@ y = self:MinimapMenu_AddButton("Raid Buff Check", y, function()
     )
 
     y = self:MinimapMenu_AddButton(
-        "ElvUI Skin: " .. (MidnightCombatAnalyticsDB.config.useElvUISkin and "ON" or "OFF"),
         y,
         function()
             MidnightCombatAnalyticsDB.config.useElvUISkin = not MidnightCombatAnalyticsDB.config.useElvUISkin
@@ -230,7 +226,6 @@ y = self:MinimapMenu_AddButton("Raid Buff Check", y, function()
 
     y = y - 6
 
-    y = self:MinimapMenu_AddButton("Nascondi bottone minimappa", y, function()
         MCA:MinimapButton_SetShown(false)
         MCA:Print("Bottone minimappa nascosto. Usa /mdr minimap per riattivarlo.")
     end, {1, 0.65, 0.25})

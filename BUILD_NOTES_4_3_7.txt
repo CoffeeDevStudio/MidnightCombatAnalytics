@@ -1,0 +1,5 @@
+MCA 4.3.7 RemoveDeathsHeader_PlayerTotalDeaths
+- Rimosso il box Deaths dall'header principale per Raid e M+.
+- In M+ resta Morti Totali al posto di CD Usati.
+- Le colonne Morti nelle tabelle DPS/Tank e Healer mostrano il totale per player, non 0/1.
+- I totali player vengono calcolati anche dalla timeline per supportare morti multiple nella stessa chiave.
