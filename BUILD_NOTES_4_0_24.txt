@@ -1,0 +1,6 @@
+MCA 4.0.24 DamageMeterEnumProbe
+- Uses discovered Enum.DamageMeterSessionType and Enum.DamageMeterType.
+- Probes GetCombatSessionFromType(sessionType, meterType).
+- Probes GetCombatSessionFromID(sessionID, meterType) for available sessions.
+- Probes GetCombatSessionSourceFromType/ID with and without playerGUID.
+- Output appears in DamageMeter Debug window and SavedVariables.

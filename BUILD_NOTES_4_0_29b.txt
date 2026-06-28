@@ -1,0 +1,19 @@
+MCA 4.0.29b Hotfix
+- Fix definitivo apertura UI da minimappa dopo cleanup.
+- Sostituita la chiamata MCA:ShowUI(MCA:GetLastAvailableReport()) con OpenLatestReportFromMinimap().
+- Ripristinato alias MCA:ShowUI come compatibilità se assente.
+- Mantiene rimosso il DamageMeter Debug.
+
+Excerpt Minimap.lua pre-fix around reported line:
+173:     title:SetWidth(200)
+174:     title:SetJustifyH("LEFT")
+175:     title:SetText("Midnight Combat Analytics")
+176:     table.insert(self.MinimapMenu.rows, title)
+177: 
+178:     y = self:MinimapMenu_AddButton("Apri UI", y, function()
+179:         MCA:ShowUI(MCA:GetLastAvailableReport())
+180:     end)
+181: y = self:MinimapMenu_AddButton("Raid Buff Check", y, function()
+182:         if MCA.ShowRaidBuffWindow then
+183:             MCA:ShowRaidBuffWindow()
+184:         end

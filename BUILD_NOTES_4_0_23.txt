@@ -1,0 +1,7 @@
+MCA 4.0.23 DamageMeterInspector
+- Adds Damage Meter Inspector / API Tracer.
+- Wraps C_DamageMeter functions and logs args, returns and debugstack.
+- Dumps selected Enum/API/_G reflection data.
+- Adds/updates DamageMeter Debug window for copyable output.
+- Adds /mcadm slash fallback.
+- Goal: observe Blizzard Damage Meter calls to discover the required 'type' parameter.

@@ -1,0 +1,14 @@
+MidnightCombatAnalytics 4.0.28
+
+Functional Blizzard Damage Meter integration.
+
+Changes:
+- Delays ENCOUNTER_END / CHALLENGE_MODE_COMPLETED by 1 second so Blizzard finalizes meter data.
+- Reads C_DamageMeter.GetAvailableCombatSessions().
+- Selects the best matching Blizzard session for the encounter/run.
+- Reads official DPS/HPS sessions using Enum.DamageMeterType.Dps and Enum.DamageMeterType.Hps.
+- Copies combatSources[].amountPerSecond into MCA players as blizzardDps/blizzardHps.
+- Preserves existing MCA data for class, deaths, timeline and report structure.
+- DPS/Tank and Healer tables now prioritize Blizzard DPS/HPS for the metric column.
+- Rating is recalculated from those metric values, separately for DPS/Tank and Healers.
+- Export includes the selected DPS/HPS metric and rating.

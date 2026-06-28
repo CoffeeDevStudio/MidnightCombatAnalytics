@@ -1,0 +1,5 @@
+MCA 4.0.12 SyncReportMerge
+- Sends compact per-player report snapshot at end of fight/key.
+- Receives RDEF/RDEATH data from other MCA users and merges into current/last report.
+- Deduplicates defensive and death events.
+- Keeps existing real-time DEF/DEATH sync unchanged.

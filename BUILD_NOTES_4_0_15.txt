@@ -1,0 +1,5 @@
+MCA 4.0.15 PlayerTableCleanup
+- Removed CD and Deb columns from Player table.
+- Redistributed remaining columns to fill the available panel width.
+- Renamed summary defensive panel to My Defensives.
+- Based on stable 4.0.14b SecretStringFix; no combat sync changes included.

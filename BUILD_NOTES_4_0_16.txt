@@ -1,0 +1,5 @@
+MCA 4.0.16 DashboardRoleSplit
+- Top dashboard split into DPS/Tank and Healer panels.
+- Healer panel uses HPS metric placeholder/fallback, DPS/Tank uses DPS metric placeholder/fallback.
+- Bottom row is Deaths, Timeline, Boss Breakdown.
+- My Defensives removed from summary dashboard only.

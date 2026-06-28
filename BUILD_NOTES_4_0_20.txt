@@ -1,0 +1,5 @@
+MCA 4.0.20 DamageMeterDeepDebug
+- Deep probes C_DamageMeter sessions and sources.
+- Tests GetAvailableCombatSessions, GetCombatSessionFromID, GetCombatSessionFromType.
+- Tests GetCombatSessionSourceFromID/Type with session-first and reversed argument orders.
+- Output appears in DamageMeter Debug window and SavedVariables dump.

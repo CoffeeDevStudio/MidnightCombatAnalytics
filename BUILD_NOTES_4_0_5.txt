@@ -1,0 +1,6 @@
+MCA 4.0.5
+- Added report history tab.
+- Added persistent report history save with 50 report limit.
+- Added minimap outside-click blocker.
+- Added ESC support for main report frame and raid buff check frame.
+- Mode card now shows mode + difficulty concatenated.

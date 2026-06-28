@@ -1,0 +1,21 @@
+## Interface: 120007
+## Title: Midnight Combat Analytics
+## Notes: Advanced Raid & Mythic+ Analytics
+## Author: Simone Pimpinella
+## Version: 4.0.29d
+## SavedVariables: MidnightCombatAnalyticsDB
+
+Core.lua
+SpellDB.lua
+ClassBuffs.lua
+Utils.lua
+Style.lua
+Session.lua
+Sync.lua
+Trackers.lua
+Report.lua
+UI.lua
+RaidBuffWindow.lua
+Minimap.lua
+Config.lua
+Events.lua

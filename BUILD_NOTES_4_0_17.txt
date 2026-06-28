@@ -1,0 +1,6 @@
+MCA 4.0.17 DamageMeterStats
+- Attempts to capture fight DPS/HPS from Blizzard C_DamageMeter at session finalization.
+- DPS/Tank panel uses DPS; Healer panel uses HPS.
+- MCA Rating is calculated separately for DPS/Tank and Healer groups.
+- Removed CD and Score columns from Boss Breakdown.
+- If C_DamageMeter data is unavailable, UI safely falls back to existing score logic.

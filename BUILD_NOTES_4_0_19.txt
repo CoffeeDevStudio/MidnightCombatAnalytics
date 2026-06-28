@@ -1,0 +1,5 @@
+MCA 4.0.19 DamageMeterDebugButton
+- Adds DamageMeter Debug button to minimap menu.
+- Opens a scrollable/copyable debug window.
+- Saves dump into MidnightCombatAnalyticsDB.dmDebugDump.
+- Does not alter existing slash commands.

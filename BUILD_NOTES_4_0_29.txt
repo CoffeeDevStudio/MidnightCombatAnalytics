@@ -1,0 +1,9 @@
+MidnightCombatAnalytics 4.0.29
+
+Cleanup:
+- Removed DamageMeter Debug / DMInspector slash commands.
+- Removed minimap "DamageMeter Debug" button.
+- Removed Damage Meter Inspector UI window.
+- Removed reverse-engineering/debug dump helpers from Utils.lua.
+- Removed debug text artifacts from the addon package.
+- Kept the production Blizzard Damage Meter integration in Session.lua.

@@ -1,0 +1,3 @@
+MCA 4.0.15c PlayerStatusColumnFit
+- Keeps only Player-table CD/Deb removal.
+- Fixes Stato column overflow by compacting columns and reserving scrollbar space.

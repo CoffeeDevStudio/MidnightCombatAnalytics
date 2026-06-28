@@ -1,0 +1,5 @@
+MCA 4.0.18 DamageMeterDebug
+- Adds /mca dmdebug.
+- Dumps C_DamageMeter namespace functions/fields to chat and SavedVariables.
+- Saves output in MidnightCombatAnalyticsDB.dmDebugDump.
+- No gameplay/UI changes beyond debug command.

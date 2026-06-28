@@ -1,0 +1,6 @@
+MCA 4.0.29d Hotfix
+- Ripristinate le funzioni reali BuildDashboard(data) e ShowUI(data) dalla build 4.0.28 funzionante.
+- Rimosso il fallback OpenLatestReportFromMinimap introdotto nelle hotfix precedenti.
+- Il pulsante minimappa Apri UI ora chiama direttamente MCA:ShowUI(MCA:GetLastAvailableReport()).
+- Il pulsante Storico apre direttamente la UI in tab history.
+- DamageMeter Debug resta rimosso.

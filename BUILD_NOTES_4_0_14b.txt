@@ -1,0 +1,4 @@
+MCA 4.0.14b SecretStringFix
+- Fixes Raid Buff Check crash caused by aura.name secret strings.
+- Buff checks now prefer spellID and use protected name fallback only.
+- No sync/combat-log changes included.

@@ -1,0 +1,5 @@
+MCA 4.0.29c Hotfix
+- Fix recursion/script ran too long aprendo UI da minimappa.
+- OpenLatestReportFromMinimap non chiama più ShowUI.
+- ShowUI alias non richiama più OpenLatestReportFromMinimap.
+- Mantiene rimosso DamageMeter Debug.

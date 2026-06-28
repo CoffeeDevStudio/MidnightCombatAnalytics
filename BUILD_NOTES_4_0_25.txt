@@ -1,0 +1,6 @@
+MCA 4.0.25 DamageMeterTextLog
+- Damage Meter Inspector now saves a text log into SavedVariables.
+- Main field: MidnightCombatAnalyticsDB.dmInspectorTextLog.
+- Chunked field: MidnightCombatAnalyticsDB.dmInspectorTextLogChunks.
+- File path after logout/reload: WTF/Account/<ACCOUNT>/SavedVariables/MidnightCombatAnalytics.lua.
+- Added /mcadmlog helper command.

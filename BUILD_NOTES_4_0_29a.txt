@@ -1,0 +1,19 @@
+MCA 4.0.29a Hotfix
+- Fix errore minimap: attempt to call a nil value dopo cleanup DamageMeter Debug.
+- Aggiunti fallback UI OpenLatestReportFromMinimap e SafeShowReportWindow.
+- Patchate chiamate minimap a ShowReportWindow verso wrapper sicuro.
+- Mantiene rimosso il DamageMeter Debug.
+
+Excerpt Minimap.lua pre-fix around reported line:
+161:     title:SetJustifyH("LEFT")
+162:     title:SetText("Midnight Combat Analytics")
+163:     table.insert(self.MinimapMenu.rows, title)
+164: 
+165:     y = self:MinimapMenu_AddButton("Apri UI", y, function()
+166:         MCA:ShowUI(MCA:GetLastAvailableReport())
+167:     end)
+168: y = self:MinimapMenu_AddButton("Raid Buff Check", y, function()
+169:         if MCA.ShowRaidBuffWindow then
+170:             MCA:ShowRaidBuffWindow()
+171:         end
+172:     end, {0.78, 0.25, 1.0})

@@ -1,0 +1,1 @@
+632:     self:Text(parent, "Dettaglio: "..(boss and boss.name or "Encounter"), "GameFontHighlightLarge", {"TOPLEFT", parent, "TOPLEFT", 14, -8}, 240, self:UIColor("accent"))

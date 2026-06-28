@@ -1,0 +1,3 @@
+MCA 4.0.14 BronzeClassIDs
+- Raid Buff Check now tracks Blessing of the Bronze by class-specific active buff spell IDs.
+- Header/icon still uses 381750 as display icon.

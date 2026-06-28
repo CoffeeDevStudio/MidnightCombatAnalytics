@@ -1,0 +1,5 @@
+MCA 4.0.13 SyncFix
+- Fixed addon message parser to preserve empty fields.
+- Multi-channel sync send: INSTANCE_CHAT plus PARTY/RAID fallback.
+- Report snapshot resend after encounter end.
+- UI refresh on received report sync events.

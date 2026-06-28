@@ -1,0 +1,97 @@
+696: function MCA:DrawSmallPanel(parent, title, iconSpell, colorName, headers, rows, buttonText)
+697:     local color = self:UIColor(colorName or "accent")
+698:     self:Text(parent, title, "GameFontHighlightLarge", {"TOPLEFT", parent, "TOPLEFT", 14, -12}, parent:GetWidth()-28, color)
+699: 
+700:     local scrollW = parent:GetWidth() - 16
+701:     local scrollH = parent:GetHeight() - 62
+702:     local _, child, scroll = self:Scroll(parent, {"TOPLEFT", parent, "TOPLEFT", 8, -50}, scrollW, scrollH, {0.018,0.020,0.022,0.55})
+703: 
+704:     local innerW = scrollW - 10
+705:     local normalizedHeaders = self:NormalizeColumns(child, headers)
+706:     local y = -2
+707:     y = self:TableHeader(child, normalizedHeaders, y)
+708: 
+709:     if #rows == 0 then
+710:         self:Text(child, "Nessun dato registrato.", "GameFontNormal", {"TOPLEFT", child, "TOPLEFT", 12, y-6}, innerW-24, self:UIColor("gray"))
+711:     end
+712: 
+713:     for i, rowData in ipairs(rows) do
+714:         local row = CreateFrame("Frame", nil, child, "BackdropTemplate")
+715:         row:SetPoint("TOPLEFT", 0, y)
+716:         row:SetSize(innerW, 28)
+717:         self:SetBackdropSolid(row, i % 2 == 0 and self:UIColor("rowAlt") or self:UIColor("row"), {0.12,0.13,0.14,1})
+718: 
+719:         for _, cell in ipairs(rowData) do
+720:             local x = cell.x or 0
+721:             local w = cell.w or 40
+722:             if x + w <= innerW - 4 then
+723:                 if cell.spellID then self:SpellIcon(row, cell.spellID, x, -5, 18) end
+724:                 local textX = x + (cell.spellID and 25 or 0)
+725:                 local textW = w - (cell.spellID and 25 or 0)
+726:                 self:Text(row, cell.text or "", "GameFontNormalSmall", {"LEFT", row, "LEFT", textX, 0}, textW, cell.color or self:UIColor("white"), cell.justify or "LEFT")
+727:             end
+728:         end
+729: 
+730:         y = y - 28
+731:     end
+732: 
+733:     self:UpdateScrollBar(child, scroll, math.abs(y)+20)
+734: 
+735:     if buttonText and buttonText ~= "" then
+736:         self:Button(parent, buttonText, {"BOTTOMLEFT", parent, "BOTTOMLEFT", 8, 8}, parent:GetWidth()-16, 24, function()
+737:             local label = buttonText or ""
+738: 
+739:             if label:find("Torna") then
+740:                 MCA.activeTab = "summary"
+741:             elseif title == "Deaths" then
+742:                 MCA.activeTab = "deaths"
+743:             elseif title and title:find("Timeline") then
+744:                 MCA.activeTab = "timeline"
+745:             elseif title and (title:find("Difensive") or title:find("Defensive")) then
+746:                 MCA.activeTab = "players"
+747:             else
+748:                 MCA.activeTab = "summary"
+749:             end
+750: 
+751:             MCA:BuildDashboard(MCA.lastReport)
+752:         end)
+753:     end
+754: end
+755: 
+1068:     local topY = -106
+1069:     local playerH = 330
+1070: 
+1071:     local leftTop = self:Panel(root, {"TOPLEFT", root, "TOPLEFT", leftX, topY}, leftW, playerH)
+1072:     self:DrawPlayerTable(leftTop, data)
+1073: 
+1074:     local rightTop = self:Panel(root, {"TOPLEFT", root, "TOPLEFT", rightX, topY}, rightW, playerH)
+1075:     self:DrawBossBreakdown(rightTop, data)
+1076: 
+1077:     -- Bottom row: 3 cards only, perfectly aligned across the whole dashboard width.
+1078:     -- No Debuff/Buff card in the riepilogo.
+1079:     local cardsY = -460
+1080:     local cardH = 230
+1081:     local totalW = (rightX + rightW) - leftX
+1082:     local cardW = math.floor((totalW - (gap * 2)) / 3)
+1083: 
+1084:     local deathPanel = self:Panel(root, {"TOPLEFT", root, "TOPLEFT", leftX, cardsY}, cardW, cardH)
+1085:     self:DrawSmallPanel(deathPanel, "Deaths", nil, "red",
+1086:         {{label="Tempo",x=10,w=55},{label="Player",x=76,w=110},{label="Boss",x=198,w=110},{label="HP",x=320,w=38}},
+1087:         self:BuildDeathsRows(data), nil)
+1088: 
+1089:     local timelinePanel = self:Panel(root, {"TOPLEFT", root, "TOPLEFT", leftX + cardW + gap, cardsY}, cardW, cardH)
+1090:     self:DrawSmallPanel(timelinePanel, "Timeline  (Eventi principali)", nil, "blue",
+1091:         {{label="Tempo",x=10,w=55},{label="Evento",x=76,w=210},{label="Player",x=300,w=90}},
+1092:         self:BuildTimelineRows(data), nil)
+1093: 
+1094:     local defensivePanel = self:Panel(root, {"TOPLEFT", root, "TOPLEFT", leftX + (cardW + gap) * 2, cardsY}, cardW, cardH)
+1095:     local player = self.selectedPlayer or self:BuildPlayerList(data)[1]
+1096:     self:DrawSmallPanel(defensivePanel, "Difensive "..(player and "("..(player.name or "?")..")" or ""), nil, "blue",
+1097:         {{label="Icona",x=10,w=42},{label="Spell",x=60,w=180},{label="Tempo",x=255,w=60},{label="Tipo",x=325,w=68}},
+1098:         self:BuildDefensiveRows(data), nil)
+1099: end
+1100: 
+1101: 
+1102: function MCA:GetDifficultyColor(difficulty)
+1103:     difficulty = tostring(difficulty or "")
+1104: 

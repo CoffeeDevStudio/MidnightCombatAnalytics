@@ -1,0 +1,18 @@
+259: function MCA:CountCDsInWindow(data, startTime, endTime)
+475:         {"CD Usati", tostring(totals.cds), self:UIColor("green")},
+523: function MCA:DrawPlayerTable(parent, data)
+542:     local cols = {
+548:         {label="CD", x=360, w=36, justify="CENTER"},
+549:         {label="Deb", x=404, w=38, justify="CENTER"},
+615:     local cols = {
+622:         {label="CD", x=365, w=34, justify="CENTER"},
+635:         local cds = self:CountCDsInWindow(data, b.startTime or 0, b.endTime or data.duration or 0)
+664:     local cols = {
+668:         {label="CD", x=262, w=35, justify="CENTER"},
+669:         {label="Debuff", x=312, w=48, justify="CENTER"},
+773:             elseif title and (title:find("Difensive") or title:find("Defensive")) then
+808: function MCA:BuildDebuffRows(data)
+1022:             {"Debug", "debug"},
+1054:             {{label="Icona",x=10,w=45},{label="Debuff",x=60,w=180},{label="Player",x=260,w=120},{label="Stack",x=400,w=70},{label="Durata",x=500,w=90}},
+1106:     -- No Debuff/Buff card in the riepilogo.
+1124:     self:DrawSmallPanel(defensivePanel, "Difensive "..(player and "("..(player.name or "?")..")" or ""), nil, "blue",

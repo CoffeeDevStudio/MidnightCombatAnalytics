@@ -1,0 +1,4 @@
+MCA 4.0.15b PlayerColumnsOnly Fixed
+- Based on 4.0.14b.
+- Removed only CD and Deb columns from the Player table.
+- Did not change other tabs or dashboard panels.
