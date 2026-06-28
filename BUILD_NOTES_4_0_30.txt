@@ -1,0 +1,5 @@
+MCA 4.0.30 Boss Breakdown Layout Fix
+- Corretto layout colonne Boss Breakdown che uscivano dal riquadro.
+- Colonne ora adattive in base alla larghezza reale del frame.
+- Durata e Morti restano dentro la tabella anche su finestra stretta.
+- Nessuna modifica a Damage Meter, DPS/HPS o rating.

@@ -607,14 +607,28 @@ function MCA:DrawBossBreakdown(parent, data)
     local bosses = self:GetWindows(data)
     local y = -42
 
-    -- Width budget: parent 480, inner row 464. Last column ends at x=456.
+    -- MCA 4.0.30: Boss Breakdown adaptive columns.
+    -- The panel is narrower than the old fixed 480px layout, so every column
+    -- is calculated from parent width and kept inside the frame.
+    local tableW = math.max((parent:GetWidth() or 380) - 16, 320)
+    local wNum, wPull, wKill, wDurata, wMorti = 24, 38, 38, 52, 42
+    local gap = 6
+
+    local xNum = 8
+    local xBoss = 40
+    local xMorti = tableW - wMorti
+    local xDurata = xMorti - gap - wDurata
+    local xKill = xDurata - gap - wKill
+    local xPull = xKill - gap - wPull
+    local wBoss = math.max(xPull - xBoss - gap, 100)
+
     local cols = {
-        {label="#", x=8, w=24, justify="CENTER"},
-        {label="Boss", x=42, w=190},
-        {label="Pull", x=250, w=42, justify="CENTER"},
-        {label="Kill", x=310, w=42, justify="CENTER"},
-        {label="Durata", x=375, w=70, justify="CENTER"},
-        {label="Morti", x=465, w=50, justify="CENTER"}
+        {label="#", x=xNum, w=wNum, justify="CENTER"},
+        {label="Boss", x=xBoss, w=wBoss},
+        {label="Pull", x=xPull, w=wPull, justify="CENTER"},
+        {label="Kill", x=xKill, w=wKill, justify="CENTER"},
+        {label="Durata", x=xDurata, w=wDurata, justify="CENTER"},
+        {label="Morti", x=xMorti, w=wMorti, justify="CENTER"}
     }
 
     y = self:TableHeader(parent, cols, y)
@@ -630,12 +644,12 @@ function MCA:DrawBossBreakdown(parent, data)
         local score = math.max(0, 100 - deaths*10 + math.min(cds, 10))
         if score > 100 then score = 100 end
 
-        self:Text(row, tostring(i), "GameFontNormal", {"LEFT", row, "LEFT", 8, 0}, 24, self:UIColor("white"), "CENTER")
-        self:Text(row, b.name or "Boss", "GameFontNormal", {"LEFT", row, "LEFT", 42, 0}, 190, self:UIColor("accent"))
-        self:Text(row, "1", "GameFontNormal", {"LEFT", row, "LEFT", 250, 0}, 42, self:UIColor("white"), "CENTER")
-        self:SuccessTexture(row, {"LEFT", row, "LEFT", 322, 0}, b.success)
-        self:Text(row, self:FormatTime(b.duration or ((b.endTime or 0)-(b.startTime or 0))), "GameFontNormal", {"LEFT", row, "LEFT", 375, 0}, 70, self:UIColor("white"), "CENTER")
-        self:Text(row, tostring(deaths), "GameFontNormal", {"LEFT", row, "LEFT", 465, 0}, 50, deaths > 0 and self:UIColor("red") or self:UIColor("white"), "CENTER")
+        self:Text(row, tostring(i), "GameFontNormal", {"LEFT", row, "LEFT", xNum, 0}, wNum, self:UIColor("white"), "CENTER")
+        self:Text(row, b.name or "Boss", "GameFontNormal", {"LEFT", row, "LEFT", xBoss, 0}, wBoss, self:UIColor("accent"))
+        self:Text(row, "1", "GameFontNormal", {"LEFT", row, "LEFT", xPull, 0}, wPull, self:UIColor("white"), "CENTER")
+        self:SuccessTexture(row, {"LEFT", row, "LEFT", xKill + 12, 0}, b.success)
+        self:Text(row, self:FormatTime(b.duration or ((b.endTime or 0)-(b.startTime or 0))), "GameFontNormal", {"LEFT", row, "LEFT", xDurata, 0}, wDurata, self:UIColor("white"), "CENTER")
+        self:Text(row, tostring(deaths), "GameFontNormal", {"LEFT", row, "LEFT", xMorti, 0}, wMorti, deaths > 0 and self:UIColor("red") or self:UIColor("white"), "CENTER")
 
         row:SetScript("OnClick", function()
             MCA.selectedBoss = b
