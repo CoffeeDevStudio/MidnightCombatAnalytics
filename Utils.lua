@@ -193,3 +193,74 @@ function MCA:ApplyClassBasedRatings(report)
         end
     end
 end
+
+
+-- ============================================================================
+-- MCA 4.1.7 Blizzard Interrupt helpers
+-- ============================================================================
+
+function MCA:GetInterruptValue(player)
+    if not player then return 0 end
+    return tonumber(player.blizzardInterrupts or player.interrupts or player.interruptCount or 0) or 0
+end
+
+function MCA:GetSortedInterruptPlayers(report)
+    local list = {}
+    if report and type(report.players) == "table" then
+        for _, p in ipairs(report.players) do
+            local value = self:GetInterruptValue(p)
+            if value and value > 0 then
+                table.insert(list, p)
+            end
+        end
+    end
+
+    table.sort(list, function(a, b)
+        local av = self:GetInterruptValue(a)
+        local bv = self:GetInterruptValue(b)
+        if av == bv then
+            return tostring(a.name or "") < tostring(b.name or "")
+        end
+        return av > bv
+    end)
+
+    return list
+end
+
+function MCA:CaptureBlizzardInterrupts(report, sessionID)
+    if not report or not sessionID then return end
+    if not C_DamageMeter or not Enum or not Enum.DamageMeterType or not Enum.DamageMeterType.Interrupts then return end
+    if type(C_DamageMeter.GetCombatSessionFromID) ~= "function" then return end
+
+    local ok, data = pcall(C_DamageMeter.GetCombatSessionFromID, sessionID, Enum.DamageMeterType.Interrupts)
+    if not ok or type(data) ~= "table" or type(data.combatSources) ~= "table" then return end
+
+    report.blizzardInterrupts = report.blizzardInterrupts or {}
+
+    local byGuid = {}
+    local byName = {}
+
+    if type(report.players) == "table" then
+        for _, p in ipairs(report.players) do
+            if p.guid then byGuid[p.guid] = p end
+            if p.name then byName[p.name] = p end
+        end
+    end
+
+    for _, source in ipairs(data.combatSources) do
+        local value = tonumber(source.totalAmount or source.amount or source.count or 0) or 0
+        local guid = source.sourceGUID or source.guid or source.unitGUID
+        local name = nil
+        local okName, plainName = pcall(tostring, source.name)
+        if okName then name = plainName end
+
+        if value > 0 then
+            report.blizzardInterrupts[guid or name or tostring(_)] = value
+
+            local p = (guid and byGuid[guid]) or (name and byName[name])
+            if p then
+                p.blizzardInterrupts = value
+            end
+        end
+    end
+end

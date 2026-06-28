@@ -1047,6 +1047,8 @@ function MCA:DrawFullPage(root, data)
         self:DrawPlayerTable(panel, data)
         y = y - 450
 
+    elseif self.activeTab == "interrupts" then
+        self:BuildInterruptPage(content or page or body or frame, data)
     elseif self.activeTab == "deaths" then
         local panel = self:Panel(child, {"TOPLEFT", child, "TOPLEFT", 12, y}, 1100, 430)
         self:DrawSmallPanel(panel, "Deaths", nil, "red",
@@ -1372,4 +1374,89 @@ end
 -- MCA 4.1.5 class-rating UI helpers
 function MCA:GetDisplayRating(player)
     return tonumber(player and (player.classRating or player.rating or player.score) or 0) or 0
+end
+
+
+-- ============================================================================
+-- MCA 4.1.7 Interrupt tab
+-- ============================================================================
+
+function MCA:BuildInterruptPage(parent, report)
+    if not parent then return end
+
+    self:Text(parent, "Interrupt", "GameFontNormalLarge", {"TOPLEFT", parent, "TOPLEFT", 14, -12}, 180, self:UIColor("accent"))
+
+    local list = self:GetSortedInterruptPlayers(report)
+
+    local box = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+    box:SetPoint("TOPLEFT", parent, "TOPLEFT", 14, -46)
+    box:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -14, 14)
+
+    if self.SetBackdropSolid then
+        self:SetBackdropSolid(box, {0.02, 0.02, 0.025, 0.68}, {0.22, 0.22, 0.22, 1})
+    elseif box.SetBackdrop then
+        box:SetBackdrop({
+            bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+            edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+            tile = true,
+            tileSize = 16,
+            edgeSize = 10,
+            insets = {left=2,right=2,top=2,bottom=2}
+        })
+        box:SetBackdropColor(0.02, 0.02, 0.025, 0.68)
+        box:SetBackdropBorderColor(0.22, 0.22, 0.22, 1)
+    end
+
+    local cols = {
+        {label="#", x=12, w=36, justify="CENTER"},
+        {label="Player", x=58, w=260},
+        {label="Classe", x=340, w=220},
+        {label="Interrupt", x=590, w=100, justify="CENTER"},
+    }
+
+    local header = CreateFrame("Frame", nil, box)
+    header:SetPoint("TOPLEFT", box, "TOPLEFT", 8, -10)
+    header:SetPoint("TOPRIGHT", box, "TOPRIGHT", -8, -10)
+    header:SetHeight(28)
+
+    for _, c in ipairs(cols) do
+        self:Text(header, c.label, "GameFontNormalSmall", {"LEFT", header, "LEFT", c.x, 0}, c.w, self:UIColor("white"), c.justify or "LEFT")
+    end
+
+    if not list or #list == 0 then
+        self:Text(box, "Nessun interrupt registrato per questo encounter.", "GameFontNormal", {"TOPLEFT", box, "TOPLEFT", 20, -52}, 440, self:UIColor("muted"))
+        return
+    end
+
+    local y = -42
+    for i, p in ipairs(list) do
+        local row = CreateFrame("Frame", nil, box)
+        row:SetPoint("TOPLEFT", box, "TOPLEFT", 8, y)
+        row:SetPoint("TOPRIGHT", box, "TOPRIGHT", -8, y)
+        row:SetHeight(28)
+
+        if self.SetBackdropSolid then
+            self:SetBackdropSolid(row, i % 2 == 0 and {0.08,0.08,0.085,0.42} or {0.04,0.04,0.045,0.42}, {0.13,0.13,0.13,0.7})
+        end
+
+        self:Text(row, tostring(i)..".", "GameFontNormalSmall", {"LEFT", row, "LEFT", cols[1].x, 0}, cols[1].w, self:UIColor("white"), "CENTER")
+
+        if self.ClassIcon and p.class then
+            self:ClassIcon(row, p.class, {"LEFT", row, "LEFT", cols[2].x, 0}, 16)
+            self:Text(row, p.name or "-", "GameFontNormalSmall", {"LEFT", row, "LEFT", cols[2].x + 22, 0}, cols[2].w - 22, self:UIColor("accent"))
+        else
+            self:Text(row, p.name or "-", "GameFontNormalSmall", {"LEFT", row, "LEFT", cols[2].x, 0}, cols[2].w, self:UIColor("accent"))
+        end
+
+        if self.ClassIcon and p.class then
+            self:ClassIcon(row, p.class, {"LEFT", row, "LEFT", cols[3].x, 0}, 16)
+            self:Text(row, tostring(p.class or "-"), "GameFontNormalSmall", {"LEFT", row, "LEFT", cols[3].x + 22, 0}, cols[3].w - 22, self:UIColor("white"))
+        else
+            self:Text(row, tostring(p.class or "-"), "GameFontNormalSmall", {"LEFT", row, "LEFT", cols[3].x, 0}, cols[3].w, self:UIColor("white"))
+        end
+
+        self:Text(row, tostring(self:GetInterruptValue(p)), "GameFontNormalSmall", {"LEFT", row, "LEFT", cols[4].x, 0}, cols[4].w, self:UIColor("green"), "CENTER")
+
+        y = y - 28
+    end
 end

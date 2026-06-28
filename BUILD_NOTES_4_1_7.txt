@@ -1,0 +1,6 @@
+MCA 4.1.7 Interrupt Tab
+- Aggiunta tab Interrupt nella sidebar.
+- Cattura dati interrupt dal Blizzard Damage Meter con Enum.DamageMeterType.Interrupts.
+- Nuova pagina Interrupt: #, Player, Classe, Interrupt.
+- Ordinamento per numero di interrupt decrescente.
+- Base: 4.1.6.
