@@ -1388,6 +1388,12 @@ function MCA:BuildInterruptPage(parent, report)
     self:Text(parent, "Interrupt", "GameFontNormalLarge", {"TOPLEFT", parent, "TOPLEFT", 14, -12}, 180, self:UIColor("accent"))
 
     local list = self:GetSortedInterruptPlayers(report)
+    -- MCA 4.2.0 interrupt tab shows all players when no interrupt was captured
+    if (not list or #list == 0) and report and type(report.players) == "table" then
+        list = {}
+        for _, p in ipairs(report.players) do table.insert(list, p) end
+        table.sort(list, function(a,b) return tostring(a.name or "") < tostring(b.name or "") end)
+    end
 
     local box = CreateFrame("Frame", nil, parent, "BackdropTemplate")
     box:SetPoint("TOPLEFT", parent, "TOPLEFT", 14, -46)
