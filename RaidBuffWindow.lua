@@ -1,3 +1,40 @@
+
+-- MCA 4.1.3: Rune is intentionally excluded from Raid Buff Check UI/counts.
+local function MCA_RaidBuff_IsRuneCheck(buff)
+    if type(buff) ~= "table" then return false end
+    local key = tostring(buff.key or buff.id or buff.label or buff.name or ""):lower()
+    return key == "rune" or key:find("rune", 1, true) ~= nil or key:find("runa", 1, true) ~= nil
+end
+
+local function MCA_RaidBuff_FilterRunesFromList(list)
+    if type(list) ~= "table" then return list end
+    local filtered = {}
+    for _, buff in ipairs(list) do
+        if not MCA_RaidBuff_IsRuneCheck(buff) then
+            table.insert(filtered, buff)
+        end
+    end
+    return filtered
+end
+
+local function MCA_RaidBuff_FilterRunesFromMatrix(matrix)
+    if type(matrix) ~= "table" then return matrix end
+    matrix.buffs = MCA_RaidBuff_FilterRunesFromList(matrix.buffs)
+    if type(matrix.players) == "table" then
+        for _, player in ipairs(matrix.players) do
+            if type(player) == "table" and type(player.buffs) == "table" then
+                for key in pairs(player.buffs) do
+                    local k = tostring(key):lower()
+                    if k == "rune" or k:find("rune", 1, true) ~= nil or k:find("runa", 1, true) ~= nil then
+                        player.buffs[key] = nil
+                    end
+                end
+            end
+        end
+    end
+    return matrix
+end
+
 _G.MCA = _G.MCA or {}
 MCA = _G.MCA
 
@@ -135,6 +172,8 @@ function MCA:ShowRaidBuffWindow()
     self.raidBuffLiveStopped = false
 
     local buffs, matrix = self:CaptureRaidBuffs()
+    matrix = MCA_RaidBuff_FilterRunesFromMatrix(matrix)
+    buffs = MCA_RaidBuff_FilterRunesFromList(buffs)
     self.liveRaidBuffs = buffs or {}
     self.liveRaidBuffMatrix = matrix or { buffs = {}, players = {} }
 
@@ -149,6 +188,8 @@ function MCA:RefreshRaidBuffWindowLive()
     end
 
     local buffs, matrix = self:CaptureRaidBuffs()
+    matrix = MCA_RaidBuff_FilterRunesFromMatrix(matrix)
+    buffs = MCA_RaidBuff_FilterRunesFromList(buffs)
     self.liveRaidBuffs = buffs or {}
     self.liveRaidBuffMatrix = matrix or { buffs = {}, players = {} }
 
@@ -158,7 +199,9 @@ function MCA:RefreshRaidBuffWindowLive()
 
 end
 function MCA:BuildRaidBuffWindow(matrix)
-    if self.RaidBuffFrame then
+    
+    matrix = MCA_RaidBuff_FilterRunesFromMatrix(matrix)
+if self.RaidBuffFrame then
         self.RaidBuffFrame:Hide()
         self.RaidBuffFrame:SetParent(nil)
         self.RaidBuffFrame = nil
