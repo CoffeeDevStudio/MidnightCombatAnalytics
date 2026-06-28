@@ -1,0 +1,5 @@
+MCA 4.1.2 Raid Buff Inner Width
+- Corretto overflow tabella interna Raid Buff Check dopo riduzione finestra 4.1.1.
+- ScrollFrame: 1144 -> 908.
+- DrawRaidBuffMatrixContent width: 1144 -> 908.
+- Header e righe ora restano dentro il frame ridotto.

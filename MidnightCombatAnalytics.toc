@@ -2,7 +2,7 @@
 ## Title: Midnight Combat Analytics
 ## Notes: Advanced Raid & Mythic+ Analytics
 ## Author: Simone Pimpinella
-## Version: 4.1.1
+## Version: 4.1.2
 ## SavedVariables: MidnightCombatAnalyticsDB
 
 Core.lua

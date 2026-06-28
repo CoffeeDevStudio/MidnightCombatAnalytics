@@ -193,7 +193,7 @@ function MCA:BuildRaidBuffWindow(matrix)
     self.RaidBuffSummaryText = self:Text(f, "", "GameFontNormal", {"TOPLEFT", f, "TOPLEFT", 20, -58}, 520, self:UIColor("green"))
     self.RaidBuffStatusText = self:Text(f, "Live tracking attivo", "GameFontNormal", {"TOPRIGHT", f, "TOPRIGHT", -20, -58}, 360, self:UIColor("green"), "RIGHT")
 
-    local _, child, scroll = self:Scroll(f, {"TOPLEFT", f, "TOPLEFT", 18, -84}, 1144, 490, {0.018, 0.020, 0.022, 0.55})
+    local _, child, scroll = self:Scroll(f, {"TOPLEFT", f, "TOPLEFT", 18, -84}, 908, 490, {0.018, 0.020, 0.022, 0.55})
     self.RaidBuffScrollChild = child
     self.RaidBuffScroll = scroll
     self.RaidBuffFrame = f
@@ -261,7 +261,7 @@ function MCA:RedrawRaidBuffMatrix(matrix)
         self.RaidBuffStatusText:SetTextColor(0.2, 1, 0.2)
     end
 
-    self:DrawRaidBuffMatrixContent(self.RaidBuffScrollChild, self.RaidBuffScroll, matrix, 1144)
+    self:DrawRaidBuffMatrixContent(self.RaidBuffScrollChild, self.RaidBuffScroll, matrix, 908)
 end
 
 function MCA:GetLiveRaidBuffSummary(matrix)
@@ -300,7 +300,7 @@ function MCA:DrawRaidBuffMatrixContent(child, scroll, matrix, width)
 
     local playerColW = 220
     local roleColW = 58
-    local availableW = math.max((width or 1144) - 34, 780)
+    local availableW = math.max((width or 908) - 34, 720)
     local fixedW = playerColW + roleColW + 20
     local buffColW = 42
 
@@ -311,7 +311,7 @@ function MCA:DrawRaidBuffMatrixContent(child, scroll, matrix, width)
     end
 
     local tableW = playerColW + roleColW + (#buffs * buffColW) + 20
-    child:SetWidth(math.max(tableW, availableW))
+    child:SetWidth(math.max(math.min(tableW, availableW), availableW))
 
     local header = CreateFrame("Frame", nil, child, "BackdropTemplate")
     header:SetPoint("TOPLEFT", 0, -2)
