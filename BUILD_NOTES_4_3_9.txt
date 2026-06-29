@@ -1,0 +1,5 @@
+MCA 4.3.9 MinimapMenuSyntaxFix
+- Fix errore Minimap.lua unexpected symbol near ','.
+- Rimossi separatori/virgole orfane lasciati dalla pulizia del menu minimappa.
+- Le voci Debug, Sync, Auto Open, ElvUI Skin e Nascondi bottone minimappa restano rimosse.
+- Base: 4.3.8 presente in repo.

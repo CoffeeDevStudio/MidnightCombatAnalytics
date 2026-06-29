@@ -165,7 +165,8 @@ function MCA:MinimapMenu_Rebuild()
     y = self:MinimapMenu_AddButton("Apri UI", y, function()
         MCA:ShowUI(MCA:GetLastAvailableReport())
     end)
-y = self:MinimapMenu_AddButton("Raid Buff Check", y, function()
+
+    y = self:MinimapMenu_AddButton("Raid Buff Check", y, function()
         if MCA.ShowRaidBuffWindow then
             MCA:ShowRaidBuffWindow()
         end
@@ -184,51 +185,6 @@ y = self:MinimapMenu_AddButton("Raid Buff Check", y, function()
         MCA:ShareSummary(MCA.lastReport)
     end)
 
-    y = y - 6
-
-    y = self:MinimapMenu_AddButton(
-        y,
-        function()
-            MidnightCombatAnalyticsDB.config.debug = not MidnightCombatAnalyticsDB.config.debug
-            MCA:Print("Debug " .. (MidnightCombatAnalyticsDB.config.debug and "ON" or "OFF"))
-        end,
-        MidnightCombatAnalyticsDB.config.debug and {0.2, 1, 0.2} or {1, 0.35, 0.35}
-    )
-
-    y = self:MinimapMenu_AddButton(
-        y,
-        function()
-            MidnightCombatAnalyticsDB.config.syncEnabled = not MidnightCombatAnalyticsDB.config.syncEnabled
-            if MidnightCombatAnalyticsDB.config.syncEnabled then MCA:SendHello() end
-            MCA:Print("Sync " .. (MidnightCombatAnalyticsDB.config.syncEnabled and "ON" or "OFF"))
-        end,
-        MidnightCombatAnalyticsDB.config.syncEnabled and {0.2, 1, 0.2} or {1, 0.35, 0.35}
-    )
-
-    y = self:MinimapMenu_AddButton(
-        y,
-        function()
-            MidnightCombatAnalyticsDB.config.autoOpen = not MidnightCombatAnalyticsDB.config.autoOpen
-            MCA:Print("Auto Open " .. (MidnightCombatAnalyticsDB.config.autoOpen and "ON" or "OFF"))
-        end,
-        MidnightCombatAnalyticsDB.config.autoOpen and {0.2, 1, 0.2} or {1, 0.35, 0.35}
-    )
-
-    y = self:MinimapMenu_AddButton(
-        y,
-        function()
-            MidnightCombatAnalyticsDB.config.useElvUISkin = not MidnightCombatAnalyticsDB.config.useElvUISkin
-            MCA:DetectElvUI()
-            MCA:Print("ElvUI Skin " .. (MidnightCombatAnalyticsDB.config.useElvUISkin and "ON" or "OFF"))
-        end,
-        MidnightCombatAnalyticsDB.config.useElvUISkin and {0.2, 1, 0.2} or {1, 0.35, 0.35}
-    )
-
-    y = y - 6
-
-        MCA:MinimapButton_SetShown(false)
-        MCA:Print("Bottone minimappa nascosto. Usa /mdr minimap per riattivarlo.")
-    end, {1, 0.65, 0.25})
 end
 
 function MCA:MinimapMenu_Toggle()
@@ -249,7 +205,7 @@ function MCA:CreateMinimapMenu()
     if self.MinimapMenu then return end
 
     local menu = CreateFrame("Frame", "MCAMinimapMenu", UIParent, "BackdropTemplate")
-    menu:SetSize(228, 328)
+    menu:SetSize(228, 190)
     menu:SetFrameStrata("DIALOG")
     menu:SetFrameLevel(100)
 
