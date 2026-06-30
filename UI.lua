@@ -370,7 +370,7 @@ function MCA:DrawSidebar(root)
 
     local y = -92
     for _, tab in ipairs(tabs) do
-        local active = self.activeTab == tab[2]
+        local active = self.activeTab == tab[2] or (tab[2] == "players" and self.activeTab == "playerDetail")
         local b = CreateFrame("Button", nil, side, "BackdropTemplate")
         b:SetPoint("TOPLEFT", 8, y)
         b:SetSize(122, 34)
@@ -520,17 +520,19 @@ end
 
 
 
-function MCA:DrawPlayerTable(parent, data)
-    self:Text(parent, "Player", "GameFontHighlightLarge", {"TOPLEFT", parent, "TOPLEFT", 14, -10}, 120, self:UIColor("accent"))
+function MCA:DrawPlayerTable(parent, data, singlePlayer)
+    self:Text(parent, singlePlayer and "Player" or "Player", "GameFontHighlightLarge", {"TOPLEFT", parent, "TOPLEFT", 14, -10}, 120, self:UIColor("accent"))
 
-    local search = CreateFrame("EditBox", nil, parent, "InputBoxTemplate")
-    search:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -30, -10)
-    search:SetSize(145, 22)
-    search:SetAutoFocus(false)
-    search:SetText("")
-    search:SetTextInsets(8, 8, 0, 0)
-    search:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-    self:Text(parent, "Cerca player...", "GameFontNormalSmall", {"TOPRIGHT", search, "TOPLEFT", -6, -4}, 80, self:UIColor("gray"), "RIGHT")
+    if not singlePlayer then
+        local search = CreateFrame("EditBox", nil, parent, "InputBoxTemplate")
+        search:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -30, -10)
+        search:SetSize(145, 22)
+        search:SetAutoFocus(false)
+        search:SetText("")
+        search:SetTextInsets(8, 8, 0, 0)
+        search:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+        self:Text(parent, "Cerca player...", "GameFontNormalSmall", {"TOPRIGHT", search, "TOPLEFT", -6, -4}, 80, self:UIColor("gray"), "RIGHT")
+    end
 
     local outerW = parent:GetWidth() - 16
     local outerH = parent:GetHeight() - 50
@@ -539,20 +541,41 @@ function MCA:DrawPlayerTable(parent, data)
     local tableW = outerW - 28
 
     -- Adaptive columns. Last column always ends inside tableW.
-    local cols = {
-        {label="#", x=6, w=22, justify="CENTER"},
-        {label="Player", x=36, w=140},
-        {label="Classe", x=188, w=116},
-        {label="Ruolo", x=314, w=58, justify="CENTER"},
-        {label="Morti", x=382, w=46, justify="CENTER"},
-        {label="Score", x=438, w=58, justify="CENTER"},
-        {label="Stato", x=508, w=math.max(tableW - 508, 70)}
-    }
+    -- In single-player detail mode the "Stato" column is removed and the
+    -- score column is relabeled "Rating", so it gets the remaining width.
+    local scoreLabel = singlePlayer and "Rating" or "Score"
+    local cols
+    if singlePlayer then
+        cols = {
+            {label="#", x=6, w=22, justify="CENTER"},
+            {label="Player", x=36, w=140},
+            {label="Classe", x=188, w=116},
+            {label="Ruolo", x=314, w=58, justify="CENTER"},
+            {label="Morti", x=382, w=46, justify="CENTER"},
+            {label=scoreLabel, x=438, w=math.max(tableW - 438, 70), justify="CENTER"}
+        }
+    else
+        cols = {
+            {label="#", x=6, w=22, justify="CENTER"},
+            {label="Player", x=36, w=140},
+            {label="Classe", x=188, w=116},
+            {label="Ruolo", x=314, w=58, justify="CENTER"},
+            {label="Morti", x=382, w=46, justify="CENTER"},
+            {label=scoreLabel, x=438, w=58, justify="CENTER"},
+            {label="Stato", x=508, w=math.max(tableW - 508, 70)}
+        }
+    end
 
     local y = -2
     y = self:TableHeader(child, cols, y)
 
-    local list = self:BuildPlayerList(data)
+    local list
+    if singlePlayer then
+        list = {}
+        if self.selectedPlayer then table.insert(list, self.selectedPlayer) end
+    else
+        list = self:BuildPlayerList(data)
+    end
 
     for i, p in ipairs(list) do
         local row = CreateFrame("Button", nil, child, "BackdropTemplate")
@@ -572,18 +595,27 @@ function MCA:DrawPlayerTable(parent, data)
         self:Text(row, tostring(p.deaths or 0), "GameFontNormal", {"LEFT", row, "LEFT", 382, 0}, 46, (p.deaths or 0) > 0 and self:UIColor("red") or self:UIColor("white"), "CENTER")
 
         local score = self:GetDisplayRating(p)
-        local status, color = self:StatusForScore(score)
-        local shortStatus = status == "Ottimo" and "OK" or (status == "Buono" and "Good" or (status == "Discreto" and "Watch" or "Crit"))
 
-        self:Text(row, score.."%", "GameFontNormal", {"LEFT", row, "LEFT", 438, 0}, 58, color, "CENTER")
-        self:StatusTexture(row, {"LEFT", row, "LEFT", 510, 0}, shortStatus)
-        self:Text(row, shortStatus, "GameFontNormalSmall", {"LEFT", row, "LEFT", 530, 0}, math.max(tableW - 530, 55), color)
+        if singlePlayer then
+            local scoreCol = cols[6]
+            local ratingColor = self:GetRatingColor(score)
+            self:Text(row, tostring(score), "GameFontNormal", {"LEFT", row, "LEFT", scoreCol.x, 0}, scoreCol.w, ratingColor, "CENTER")
+        else
+            local status, color = self:StatusForScore(score)
+            local shortStatus = status == "Ottimo" and "OK" or (status == "Buono" and "Good" or (status == "Discreto" and "Watch" or "Crit"))
 
-        row:SetScript("OnClick", function()
-            MCA.selectedPlayer = p
-            MCA.activeTab = "summary"
-            MCA:BuildDashboard(data)
-        end)
+            self:Text(row, score.."%", "GameFontNormal", {"LEFT", row, "LEFT", 438, 0}, 58, color, "CENTER")
+            self:StatusTexture(row, {"LEFT", row, "LEFT", 510, 0}, shortStatus)
+            self:Text(row, shortStatus, "GameFontNormalSmall", {"LEFT", row, "LEFT", 530, 0}, math.max(tableW - 530, 55), color)
+        end
+
+        if not singlePlayer then
+            row:SetScript("OnClick", function()
+                MCA.selectedPlayer = p
+                MCA.activeTab = "summary"
+                MCA:BuildDashboard(data)
+            end)
+        end
 
         y = y - 28
     end
@@ -1015,7 +1047,7 @@ end
 function MCA:DrawFullPage(root, data)
     local _, child, scroll = self:Scroll(root, {"TOPLEFT", root, "TOPLEFT", 154, -112}, 1150, 535, {0.018,0.020,0.022,0.65})
 
-    local titleMap = {summary="Riepilogo", players="Player", deaths="Deaths", timeline="Timeline", history="Storico", settings="Impostazioni"}
+    local titleMap = {summary="Riepilogo", players="Player", playerDetail="Player", deaths="Deaths", timeline="Timeline", history="Storico", settings="Impostazioni"}
     local title = titleMap[self.activeTab] or "Riepilogo"
 
     self:Text(child, title, "GameFontHighlightLarge", {"TOPLEFT", child, "TOPLEFT", 16, -12}, 300, self:UIColor("accent"))
@@ -1045,6 +1077,11 @@ function MCA:DrawFullPage(root, data)
     elseif self.activeTab == "players" then
         local panel = self:Panel(child, {"TOPLEFT", child, "TOPLEFT", 12, y}, 1100, 430)
         self:DrawPlayerTable(panel, data)
+        y = y - 450
+
+    elseif self.activeTab == "playerDetail" then
+        local panel = self:Panel(child, {"TOPLEFT", child, "TOPLEFT", 12, y}, 1100, 430)
+        self:DrawPlayerTable(panel, data, true)
         y = y - 450
 
     elseif self.activeTab == "interrupts" then
@@ -1229,7 +1266,7 @@ function MCA:DrawRoleMetricTable(parent, data, title, wantHealer)
 
         row:SetScript("OnClick", function()
             MCA.selectedPlayer = p
-            MCA.activeTab = "players"
+            MCA.activeTab = "playerDetail"
             MCA:BuildDashboard(data)
         end)
 
