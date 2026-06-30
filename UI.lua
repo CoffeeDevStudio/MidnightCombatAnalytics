@@ -472,19 +472,19 @@ function MCA:DrawTopDashboard(root, data)
         {"Boss", totals.bossKilled.."/"..totals.bosses, self:UIColor("accent")},
         {"Durata", self:FormatTime(data.duration or 0), self:UIColor("accent")},
         {"Deaths", tostring(totals.deaths), self:UIColor("red")},
-        {self:GetHeaderCdOrDeathsLabel(data), tostring(totals.cds), self:UIColor("green")},
         {"Buff Raid", tostring(totals.buffActive or 0).."/"..tostring(totals.buffPresent or 0), self:UIColor((totals.buffMissing or 0) > 0 and "orange" or "green")},
         {"Punteggio", self:ComputeRaidScore(data).."%", self:UIColor("green")}
     }
+    local cellWidth = 126
     local x = 0
     for _, c in ipairs(cells) do
         local cell = CreateFrame("Frame", nil, kpis, "BackdropTemplate")
         cell:SetPoint("TOPLEFT", x, 0)
-        cell:SetSize(105, 64)
+        cell:SetSize(cellWidth, 64)
         self:SetBackdropSolid(cell, {0,0,0,0}, {0.17,0.18,0.19,1})
-        self:Text(cell, c[1], "GameFontNormal", {"TOP", cell, "TOP", 0, -11}, 90, self:UIColor("white"), "CENTER")
-        self:Text(cell, c[2], "GameFontHighlightLarge", {"TOP", cell, "TOP", 0, -34}, 90, c[3], "CENTER")
-        x = x + 105
+        self:Text(cell, c[1], "GameFontNormal", {"TOP", cell, "TOP", 0, -11}, cellWidth - 15, self:UIColor("white"), "CENTER")
+        self:Text(cell, c[2], "GameFontHighlightLarge", {"TOP", cell, "TOP", 0, -34}, cellWidth - 15, c[3], "CENTER")
+        x = x + cellWidth
     end
 
     local mode = self:Panel(root, {"TOPLEFT", root, "TOPLEFT", 1118, -36}, 186, 64, {0.018,0.021,0.024,0.72})
@@ -1147,8 +1147,9 @@ function MCA:CalculateRoleRatings(players)
         if maxValue and maxValue > 0 and value > 0 then
             p.mcaRating = math.floor(math.max(1, math.min(99, (value / maxValue) * 99)) + 0.5)
         else
-            -- Fallback until DPS/HPS source is implemented.
-            p.mcaRating = self:GetScore(p)
+            -- MCA: no DPS/HPS recorded for this player (value <= 0) -> rating must be 0,
+            -- never fall back to a stale GetScore() value.
+            p.mcaRating = 0
         end
     end
 end
@@ -1210,7 +1211,8 @@ function MCA:DrawRoleMetricTable(parent, data, title, wantHealer)
         row:SetSize(tableW, 28)
         self:SetBackdropSolid(row, i % 2 == 0 and self:UIColor("rowAlt") or self:UIColor("row"), {0.12,0.13,0.14,1})
 
-        local rating = p.mcaRating or self:GetScore(p)
+        local metricValue = self:GetFightMetric(p)
+        local rating = (metricValue and metricValue > 0) and (p.mcaRating or self:GetScore(p)) or 0
         local ratingColor = self:GetRatingColor(rating)
 
         self:Text(row, tostring(i)..".", "GameFontNormal", {"LEFT", row, "LEFT", cols[1].x, 0}, cols[1].w, self:UIColor("white"), "CENTER")

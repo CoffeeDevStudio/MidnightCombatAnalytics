@@ -93,13 +93,24 @@ function MCA:ShouldOpenReport(report)
     return true
 end
 
-function MCA:SafeOpenReport(report)
+function MCA:SafeOpenReport(report, forceImmediate)
     if not self:ShouldOpenReport(report) then return end
 
     local function openReport()
         if MCA and MCA.ShowUI then
             MCA:ShowUI(report)
         end
+    end
+
+    -- MCA: on a Mythic+ abandon/reset (forceImmediate), the player is often
+    -- still flagged "in combat" by the engine even though the run is over and
+    -- the instance is about to reset. Waiting for PLAYER_REGEN_ENABLED in that
+    -- case can hang indefinitely (the event may never fire cleanly before the
+    -- instance teleport), which is why the report previously only appeared
+    -- once the next key's pull ended combat. Skip the lockdown wait here.
+    if forceImmediate then
+        C_Timer.After(0.5, openReport)
+        return
     end
 
     if InCombatLockdown and InCombatLockdown() then

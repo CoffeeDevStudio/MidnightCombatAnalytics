@@ -89,7 +89,12 @@ function MCA:CHALLENGE_MODE_COMPLETED()
 end
 
 function MCA:CHALLENGE_MODE_RESET()
-    self:FinishMythicPlusSession(false)
+    -- MCA: fires both on key abandon/surrender and on normal key reset.
+    -- The run is over either way, so close it out as a completed (failed)
+    -- session and show the report immediately, instead of waiting on a
+    -- combat-lockdown check that may never resolve before the instance
+    -- teleports the player out.
+    self:FinishMythicPlusSession(false, true)
 end
 
 

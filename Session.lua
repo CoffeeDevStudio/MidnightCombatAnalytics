@@ -170,9 +170,9 @@ function MCA:StartMythicPlusSession()
     self:Print("Mythic+ started")
 end
 
-function MCA:FinishMythicPlusSession(success)
+function MCA:FinishMythicPlusSession(success, forceImmediate)
     if not self.session or self.session.type ~= "M+" then return end
-    self:FinalizeSession(success == true)
+    self:FinalizeSession(success == true, forceImmediate)
 end
 
 
@@ -617,7 +617,7 @@ function MCA:ApplyMythicPlusTotalDeaths(data)
     data.mplusDeathsTotal = total
 end
 
-function MCA:FinalizeSession(success)
+function MCA:FinalizeSession(success, forceImmediate)
     if not self.session then return end
 
     if self.ScanAllAuras then self:ScanAllAuras() end
@@ -672,7 +672,7 @@ function MCA:FinalizeSession(success)
     self.session = nil
     self.currentMythicBoss = nil
 
-    self:SafeOpenReport(report)
+    self:SafeOpenReport(report, forceImmediate)
 end
 
 
