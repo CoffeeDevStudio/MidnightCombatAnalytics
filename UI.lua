@@ -521,20 +521,9 @@ end
 
 
 function MCA:DrawPlayerTable(parent, data, singlePlayer)
-    if not singlePlayer then
-        local search = CreateFrame("EditBox", nil, parent, "InputBoxTemplate")
-        search:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -30, -10)
-        search:SetSize(145, 22)
-        search:SetAutoFocus(false)
-        search:SetText("")
-        search:SetTextInsets(8, 8, 0, 0)
-        search:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-        self:Text(parent, "Cerca player...", "GameFontNormalSmall", {"TOPRIGHT", search, "TOPLEFT", -6, -4}, 80, self:UIColor("gray"), "RIGHT")
-    end
-
-    local topOffset = singlePlayer and -8 or -40
+    local topOffset = singlePlayer and -8 or -8
     local outerW = parent:GetWidth() - 16
-    local outerH = parent:GetHeight() - (singlePlayer and 18 or 50)
+    local outerH = parent:GetHeight() - (singlePlayer and 18 or 18)
     local _, child, scroll = self:Scroll(parent, {"TOPLEFT", parent, "TOPLEFT", 8, topOffset}, outerW, outerH, {0.018,0.020,0.022,0.55})
 
     local tableW = outerW - 28
@@ -542,7 +531,8 @@ function MCA:DrawPlayerTable(parent, data, singlePlayer)
     -- Adaptive columns. Last column always ends inside tableW.
     -- In single-player detail mode the "Stato" column is removed and the
     -- score column is relabeled "Rating", so it gets the remaining width.
-    local scoreLabel = singlePlayer and "Rating" or "Score"
+    -- In list mode the "Stato" column is replaced by the DPS/HPS metric and
+    -- "Score" is relabeled "Rating", mirroring the Riepilogo tables.
     local cols
     if singlePlayer then
         cols = {
@@ -551,7 +541,7 @@ function MCA:DrawPlayerTable(parent, data, singlePlayer)
             {label="Classe", x=188, w=116},
             {label="Ruolo", x=314, w=58, justify="CENTER"},
             {label="Morti", x=382, w=46, justify="CENTER"},
-            {label=scoreLabel, x=438, w=math.max(tableW - 438, 70), justify="CENTER"}
+            {label="Rating", x=438, w=math.max(tableW - 438, 70), justify="CENTER"}
         }
     else
         cols = {
@@ -560,8 +550,8 @@ function MCA:DrawPlayerTable(parent, data, singlePlayer)
             {label="Classe", x=188, w=116},
             {label="Ruolo", x=314, w=58, justify="CENTER"},
             {label="Morti", x=382, w=46, justify="CENTER"},
-            {label=scoreLabel, x=438, w=58, justify="CENTER"},
-            {label="Stato", x=508, w=math.max(tableW - 508, 70)}
+            {label="DPS/HPS", x=438, w=90, justify="CENTER"},
+            {label="Rating", x=540, w=math.max(tableW - 540, 70), justify="CENTER"}
         }
     end
 
@@ -593,25 +583,26 @@ function MCA:DrawPlayerTable(parent, data, singlePlayer)
         self:Text(row, self:RoleShort(p.role), "GameFontNormalSmall", {"LEFT", row, "LEFT", 314, 0}, 58, self:UIColor("white"), "CENTER")
         self:Text(row, tostring(p.deaths or 0), "GameFontNormal", {"LEFT", row, "LEFT", 382, 0}, 46, (p.deaths or 0) > 0 and self:UIColor("red") or self:UIColor("white"), "CENTER")
 
-        local score = self:GetDisplayRating(p)
-
         if singlePlayer then
+            local score = self:GetDisplayRating(p)
             local scoreCol = cols[6]
             local ratingColor = self:GetRatingColor(score)
             self:Text(row, tostring(score), "GameFontNormal", {"LEFT", row, "LEFT", scoreCol.x, 0}, scoreCol.w, ratingColor, "CENTER")
         else
-            local status, color = self:StatusForScore(score)
-            local shortStatus = status == "Ottimo" and "OK" or (status == "Buono" and "Good" or (status == "Discreto" and "Watch" or "Crit"))
+            -- Same data as the Riepilogo role tables.
+            local metricValue = self:GetFightMetric(p)
+            local rating = (metricValue and metricValue > 0) and (p.mcaRating or self:GetScore(p)) or 0
+            local ratingColor = self:GetRatingColor(rating)
+            local metricCol, ratingCol = cols[6], cols[7]
 
-            self:Text(row, score.."%", "GameFontNormal", {"LEFT", row, "LEFT", 438, 0}, 58, color, "CENTER")
-            self:StatusTexture(row, {"LEFT", row, "LEFT", 510, 0}, shortStatus)
-            self:Text(row, shortStatus, "GameFontNormalSmall", {"LEFT", row, "LEFT", 530, 0}, math.max(tableW - 530, 55), color)
+            self:Text(row, self:FormatMetricValue(metricValue), "GameFontNormal", {"LEFT", row, "LEFT", metricCol.x, 0}, metricCol.w, self:UIColor("white"), "CENTER")
+            self:Text(row, tostring(rating), "GameFontNormal", {"LEFT", row, "LEFT", ratingCol.x, 0}, ratingCol.w, ratingColor, "CENTER")
         end
 
         if not singlePlayer then
             row:SetScript("OnClick", function()
                 MCA.selectedPlayer = p
-                MCA.activeTab = "summary"
+                MCA.activeTab = "playerDetail"
                 MCA:BuildDashboard(data)
             end)
         end
