@@ -521,8 +521,6 @@ end
 
 
 function MCA:DrawPlayerTable(parent, data, singlePlayer)
-    self:Text(parent, singlePlayer and "Player" or "Player", "GameFontHighlightLarge", {"TOPLEFT", parent, "TOPLEFT", 14, -10}, 120, self:UIColor("accent"))
-
     if not singlePlayer then
         local search = CreateFrame("EditBox", nil, parent, "InputBoxTemplate")
         search:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -30, -10)
@@ -534,9 +532,10 @@ function MCA:DrawPlayerTable(parent, data, singlePlayer)
         self:Text(parent, "Cerca player...", "GameFontNormalSmall", {"TOPRIGHT", search, "TOPLEFT", -6, -4}, 80, self:UIColor("gray"), "RIGHT")
     end
 
+    local topOffset = singlePlayer and -8 or -40
     local outerW = parent:GetWidth() - 16
-    local outerH = parent:GetHeight() - 50
-    local _, child, scroll = self:Scroll(parent, {"TOPLEFT", parent, "TOPLEFT", 8, -40}, outerW, outerH, {0.018,0.020,0.022,0.55})
+    local outerH = parent:GetHeight() - (singlePlayer and 18 or 50)
+    local _, child, scroll = self:Scroll(parent, {"TOPLEFT", parent, "TOPLEFT", 8, topOffset}, outerW, outerH, {0.018,0.020,0.022,0.55})
 
     local tableW = outerW - 28
 
