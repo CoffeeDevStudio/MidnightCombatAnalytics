@@ -305,7 +305,6 @@ function MCA:MainFrame()
     self:SetBackdropSolid(f, self:UIColor("bg"), {0.28,0.28,0.30,1})
 
     self:Text(f, "Midnight Combat Analytics v"..(self.VERSION or "?"), "GameFontHighlightLarge", {"TOP", f, "TOP", 0, -10}, 460, self:UIColor("accent"), "CENTER")
-    self:Text(f, "✦  •••  ×", "GameFontNormalLarge", {"TOPRIGHT", f, "TOPRIGHT", -18, -11}, 90, self:UIColor("gray"), "RIGHT")
 
     return f
 end
@@ -564,6 +563,8 @@ function MCA:DrawPlayerTable(parent, data, singlePlayer)
         if self.selectedPlayer then table.insert(list, self.selectedPlayer) end
     else
         list = self:BuildPlayerList(data)
+        -- Populate mcaRating with the same values the Riepilogo role tables use.
+        if self.CalculateRoleRatings then self:CalculateRoleRatings(list) end
     end
 
     for i, p in ipairs(list) do
@@ -809,17 +810,24 @@ function MCA:DrawSmallPanel(parent, title, iconSpell, colorName, headers, rows, 
     end
 end
 
-function MCA:BuildDeathsRows(data)
+function MCA:BuildDeathsRows(data, cols)
+    -- cols: optional {time, player, boss, extra} column defs {x,w}. When omitted,
+    -- falls back to the compact summary-card layout. This keeps the death rows
+    -- aligned with whatever header the caller draws (summary card vs full tab).
+    cols = cols or {
+        time   = {x=10,  w=55},
+        player = {x=76,  w=110},
+        boss   = {x=198, w=110},
+        extra  = {x=320, w=38}
+    }
     local rows = {}
     for _, p in pairs(data.players or {}) do
         if (p.deaths or 0) > 0 then
             table.insert(rows, {
-                {x=10, w=55, text=self:FormatTime(p.deathTime or 0), color=self:UIColor("white")},
-                {x=75, w=80, text=p.name or "?", color=self:UIColor("accent")},
-                {x=165, w=80, text=self:BossNameAtTime(data, p.deathTime or 0), color=self:UIColor("white")},
-                {x=260, w=40, text="-", color=self:UIColor("gray"), justify="CENTER"},
-                {x=315, w=40, text="0%", color=self:UIColor("white"), justify="CENTER"},
-                {x=365, w=60, text="-", color=self:UIColor("white"), justify="CENTER"}
+                {x=cols.time.x,   w=cols.time.w,   text=self:FormatTime(p.deathTime or 0), color=self:UIColor("white")},
+                {x=cols.player.x, w=cols.player.w, text=p.name or "?", color=self:UIColor("accent")},
+                {x=cols.boss.x,   w=cols.boss.w,   text=self:BossNameAtTime(data, p.deathTime or 0), color=self:UIColor("white")},
+                {x=cols.extra.x,  w=cols.extra.w,  text="-", color=self:UIColor("gray"), justify="CENTER"}
             })
         end
     end
@@ -849,17 +857,21 @@ function MCA:BuildDebuffRows(data)
     return rows
 end
 
-function MCA:BuildTimelineRows(data)
+function MCA:BuildTimelineRows(data, cols)
+    cols = cols or {
+        time   = {x=10, w=55},
+        event  = {x=76, w=210},
+        player = {x=300, w=90}
+    }
     local events = {}
     for _, e in ipairs(data.timeline or {}) do table.insert(events, e) end
     table.sort(events, function(a,b) return (a.time or 0) < (b.time or 0) end)
     local rows = {}
     for _, e in ipairs(events) do
         table.insert(rows, {
-            {x=10, w=55, text=self:FormatTime(e.time or 0), color=self:UIColor("white")},
-            {x=75, w=135, text=e.text or "Evento", spellID=e.spellID, color=e.type == "death" and self:UIColor("red") or self:UIColor("white")},
-            {x=240, w=75, text=e.player or "", color=self:UIColor("blue")},
-            {x=325, w=85, text=self:BossNameAtTime(data, e.time or 0), color=self:UIColor("white")}
+            {x=cols.time.x,   w=cols.time.w,   text=self:FormatTime(e.time or 0), color=self:UIColor("white")},
+            {x=cols.event.x,  w=cols.event.w,  text=e.text or "Evento", spellID=e.spellID, color=e.type == "death" and self:UIColor("red") or self:UIColor("white")},
+            {x=cols.player.x, w=cols.player.w, text=e.player or "", color=self:UIColor("blue")}
         })
     end
     return rows
@@ -1078,9 +1090,15 @@ function MCA:DrawFullPage(root, data)
         self:BuildInterruptPage(content or page or body or frame, data)
     elseif self.activeTab == "deaths" then
         local panel = self:Panel(child, {"TOPLEFT", child, "TOPLEFT", 12, y}, 1100, 430)
+        local deathCols = {
+            time   = {x=10,  w=70},
+            player = {x=90,  w=200},
+            boss   = {x=300, w=260},
+            extra  = {x=570, w=80}
+        }
         self:DrawSmallPanel(panel, "Deaths", nil, "red",
-            {{label="Tempo",x=10,w=55},{label="Player",x=75,w=100},{label="Boss",x=190,w=110},{label="Killer",x=320,w=90},{label="HP",x=430,w=60},{label="Def. Attiva",x=510,w=120}},
-            self:BuildDeathsRows(data), "Torna al riepilogo")
+            {{label="Tempo",x=deathCols.time.x,w=deathCols.time.w},{label="Player",x=deathCols.player.x,w=deathCols.player.w},{label="Boss",x=deathCols.boss.x,w=deathCols.boss.w},{label="HP",x=deathCols.extra.x,w=deathCols.extra.w,justify="CENTER"}},
+            self:BuildDeathsRows(data, deathCols), "Torna al riepilogo")
         y = y - 450
 
     elseif self.activeTab == "buffs" then
@@ -1092,9 +1110,14 @@ function MCA:DrawFullPage(root, data)
 
     elseif self.activeTab == "timeline" then
         local panel = self:Panel(child, {"TOPLEFT", child, "TOPLEFT", 12, y}, 1100, 430)
+        local tlCols = {
+            time   = {x=10,  w=70},
+            event  = {x=90,  w=460},
+            player = {x=560, w=160}
+        }
         self:DrawSmallPanel(panel, "Timeline  (Eventi principali)", nil, "blue",
-            {{label="Tempo",x=10,w=55},{label="Evento",x=75,w=260},{label="Player",x=360,w=120},{label="Boss",x=500,w=130}},
-            self:BuildTimelineRows(data), "Torna al riepilogo")
+            {{label="Tempo",x=tlCols.time.x,w=tlCols.time.w},{label="Evento",x=tlCols.event.x,w=tlCols.event.w},{label="Player",x=tlCols.player.x,w=tlCols.player.w}},
+            self:BuildTimelineRows(data, tlCols), "Torna al riepilogo")
         y = y - 450
 
     elseif self.activeTab == "history" then

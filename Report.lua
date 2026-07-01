@@ -93,7 +93,43 @@ function MCA:ShareSummary(data)
         return
     end
 
-    local t = self:GetTotals(data)
+    -- Build the same player data the DPS/Tank and Healer tables show, then
+    -- post it grouped by role: Tank first, then DPS, then Healer.
+    local players = self:BuildPlayerList(data)
+    if self.CalculateRoleRatings then self:CalculateRoleRatings(players) end
 
-    SendChatMessage("[MCA] " .. (data.boss or "?") .. " - Deaths: " .. t.deaths .. " - Defensives: " .. t.cds .. " - MCA: " .. t.addon .. "/" .. t.players, chatType)
+    local function roleKey(p)
+        local r = (p.role or ""):upper()
+        if r == "TANK" then return 1 end
+        if r == "HEALER" then return 3 end
+        return 2 -- DPS / everything else
+    end
+
+    -- Stable sort: by role bucket, then by metric descending within the bucket.
+    table.sort(players, function(a, b)
+        local ra, rb = roleKey(a), roleKey(b)
+        if ra ~= rb then return ra < rb end
+        return (self:GetFightMetric(a) or 0) > (self:GetFightMetric(b) or 0)
+    end)
+
+    local t = self:GetTotals(data)
+    SendChatMessage("[MCA] " .. (data.boss or "?") .. " - Durata: " .. self:FormatTime(data.duration or 0) .. " - Deaths: " .. t.deaths, chatType)
+
+    local roleTitles = { [1] = "== TANK ==", [2] = "== DPS ==", [3] = "== HEALER ==" }
+    local lastRole = nil
+
+    for _, p in ipairs(players) do
+        local rk = roleKey(p)
+        if rk ~= lastRole then
+            SendChatMessage(roleTitles[rk], chatType)
+            lastRole = rk
+        end
+
+        local metricLabel = (rk == 3) and "HPS" or "DPS"
+        local metric = self:FormatMetricValue(self:GetFightMetric(p))
+        local rating = p.mcaRating or 0
+
+        SendChatMessage(string.format("%s (%s) - %s: %s - Rating: %d",
+            p.name or "?", self:PrettyClass(p.class), metricLabel, metric, rating), chatType)
+    end
 end
