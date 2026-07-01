@@ -8,11 +8,13 @@
 Core.lua
 SpellDB.lua
 ClassBuffs.lua
+BenchmarksDB.lua
 Utils.lua
 Style.lua
 Session.lua
 Sync.lua
 Trackers.lua
+Parse.lua
 Report.lua
 UI.lua
 RaidBuffWindow.lua

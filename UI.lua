@@ -540,7 +540,7 @@ function MCA:DrawPlayerTable(parent, data, singlePlayer)
             {label="Classe", x=188, w=116},
             {label="Ruolo", x=314, w=58, justify="CENTER"},
             {label="Morti", x=382, w=46, justify="CENTER"},
-            {label="Rating", x=438, w=math.max(tableW - 438, 70), justify="CENTER"}
+            {label="Parse", x=438, w=math.max(tableW - 438, 70), justify="CENTER"}
         }
     else
         cols = {
@@ -550,7 +550,7 @@ function MCA:DrawPlayerTable(parent, data, singlePlayer)
             {label="Ruolo", x=314, w=58, justify="CENTER"},
             {label="Morti", x=382, w=46, justify="CENTER"},
             {label="DPS/HPS", x=438, w=90, justify="CENTER"},
-            {label="Rating", x=540, w=math.max(tableW - 540, 70), justify="CENTER"}
+            {label="Parse", x=540, w=math.max(tableW - 540, 70), justify="CENTER"}
         }
     end
 
@@ -585,19 +585,17 @@ function MCA:DrawPlayerTable(parent, data, singlePlayer)
         self:Text(row, tostring(p.deaths or 0), "GameFontNormal", {"LEFT", row, "LEFT", 382, 0}, 46, (p.deaths or 0) > 0 and self:UIColor("red") or self:UIColor("white"), "CENTER")
 
         if singlePlayer then
-            local score = self:GetDisplayRating(p)
+            local _, parseColor, parseText = self:ResolvePlayerParse(p, data)
             local scoreCol = cols[6]
-            local ratingColor = self:GetRatingColor(score)
-            self:Text(row, tostring(score), "GameFontNormal", {"LEFT", row, "LEFT", scoreCol.x, 0}, scoreCol.w, ratingColor, "CENTER")
+            self:Text(row, parseText, "GameFontNormal", {"LEFT", row, "LEFT", scoreCol.x, 0}, scoreCol.w, parseColor, "CENTER")
         else
             -- Same data as the Riepilogo role tables.
             local metricValue = self:GetFightMetric(p)
-            local rating = (metricValue and metricValue > 0) and (p.mcaRating or self:GetScore(p)) or 0
-            local ratingColor = self:GetRatingColor(rating)
+            local _, parseColor, parseText = self:ResolvePlayerParse(p, data)
             local metricCol, ratingCol = cols[6], cols[7]
 
             self:Text(row, self:FormatMetricValue(metricValue), "GameFontNormal", {"LEFT", row, "LEFT", metricCol.x, 0}, metricCol.w, self:UIColor("white"), "CENTER")
-            self:Text(row, tostring(rating), "GameFontNormal", {"LEFT", row, "LEFT", ratingCol.x, 0}, ratingCol.w, ratingColor, "CENTER")
+            self:Text(row, parseText, "GameFontNormal", {"LEFT", row, "LEFT", ratingCol.x, 0}, ratingCol.w, parseColor, "CENTER")
         end
 
         if not singlePlayer then
@@ -1243,7 +1241,7 @@ function MCA:DrawRoleMetricTable(parent, data, title, wantHealer)
         {label="Classe", x=178, w=105},
         {label="Morti", x=292, w=44, justify="CENTER"},
         {label=metricLabel, x=348, w=72, justify="CENTER"},
-        {label="Rating", x=434, w=math.max(tableW - 434, 70), justify="CENTER"}
+        {label="Parse", x=434, w=math.max(tableW - 434, 70), justify="CENTER"}
     }
 
     local y = -2
@@ -1261,9 +1259,7 @@ function MCA:DrawRoleMetricTable(parent, data, title, wantHealer)
         row:SetSize(tableW, 28)
         self:SetBackdropSolid(row, i % 2 == 0 and self:UIColor("rowAlt") or self:UIColor("row"), {0.12,0.13,0.14,1})
 
-        local metricValue = self:GetFightMetric(p)
-        local rating = (metricValue and metricValue > 0) and (p.mcaRating or self:GetScore(p)) or 0
-        local ratingColor = self:GetRatingColor(rating)
+        local _, parseColor, parseText = self:ResolvePlayerParse(p, data)
 
         self:Text(row, tostring(i)..".", "GameFontNormal", {"LEFT", row, "LEFT", cols[1].x, 0}, cols[1].w, self:UIColor("white"), "CENTER")
 
@@ -1275,7 +1271,7 @@ function MCA:DrawRoleMetricTable(parent, data, title, wantHealer)
 
         self:Text(row, tostring(p.deaths or 0), "GameFontNormal", {"LEFT", row, "LEFT", cols[4].x, 0}, cols[4].w, (p.deaths or 0) > 0 and self:UIColor("red") or self:UIColor("white"), "CENTER")
         self:Text(row, self:FormatMetricValue(self:GetFightMetric(p)), "GameFontNormal", {"LEFT", row, "LEFT", cols[5].x, 0}, cols[5].w, self:UIColor("white"), "CENTER")
-        self:Text(row, tostring(rating), "GameFontNormal", {"LEFT", row, "LEFT", cols[6].x, 0}, cols[6].w, ratingColor, "CENTER")
+        self:Text(row, parseText, "GameFontNormal", {"LEFT", row, "LEFT", cols[6].x, 0}, cols[6].w, parseColor, "CENTER")
 
         row:SetScript("OnClick", function()
             MCA.selectedPlayer = p

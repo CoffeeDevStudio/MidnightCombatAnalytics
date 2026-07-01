@@ -127,9 +127,9 @@ function MCA:ShareSummary(data)
 
         local metricLabel = (rk == 3) and "HPS" or "DPS"
         local metric = self:FormatMetricValue(self:GetFightMetric(p))
-        local rating = p.mcaRating or 0
+        local _, _, parseText = self:ResolvePlayerParse(p, data)
 
-        SendChatMessage(string.format("%s (%s) - %s: %s - Rating: %d",
-            p.name or "?", self:PrettyClass(p.class), metricLabel, metric, rating), chatType)
+        SendChatMessage(string.format("%s (%s) - %s: %s - Parse: %s",
+            p.name or "?", self:PrettyClass(p.class), metricLabel, metric, parseText), chatType)
     end
 end

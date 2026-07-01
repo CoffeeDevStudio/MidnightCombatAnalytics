@@ -30,6 +30,19 @@ function MCA:AddRosterUnit(unit)
 
     self.roster[name] = self:CreateEmptyPlayer(name, class, role, guid, unit)
 
+    -- Capture spec for the local player (we can only query our own spec via
+    -- the standard API; other players' specs would require inspects). This is
+    -- used by Parse.lua to match the MCA_Benchmarks entries precisely.
+    if UnitIsUnit(unit, "player") and GetSpecialization then
+        local specIndex = GetSpecialization()
+        if specIndex and GetSpecializationInfo then
+            local specID = GetSpecializationInfo(specIndex)
+            if specID then
+                self.roster[name].specID = specID
+            end
+        end
+    end
+
     if guid then
         self.guidToName[guid] = name
     end
