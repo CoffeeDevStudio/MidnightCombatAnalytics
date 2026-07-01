@@ -8,6 +8,7 @@ local events = {
     "PLAYER_LOGIN",
     "PLAYER_REGEN_DISABLED",
     "PLAYER_ENTERING_WORLD",
+    "PLAYER_LEAVING_WORLD",
     "GROUP_ROSTER_UPDATE",
     "ENCOUNTER_START",
     "ENCOUNTER_END",
@@ -95,6 +96,30 @@ function MCA:CHALLENGE_MODE_RESET()
     -- combat-lockdown check that may never resolve before the instance
     -- teleports the player out.
     self:FinishMythicPlusSession(false, true)
+end
+
+function MCA:PLAYER_LEAVING_WORLD()
+    -- MCA: safety net for the "vote to abandon" feature. A successful abandon
+    -- vote teleports the whole group out of the instance and does NOT reliably
+    -- fire CHALLENGE_MODE_RESET (or fires it after the player has already left
+    -- the challenge map), so the run was never being closed and the report
+    -- only surfaced when the next key started. If we still have an active M+
+    -- session when we leave the world, finalize it as a failed run now.
+    --
+    -- Guard: skip if the challenge mode is still active on this map (e.g. the
+    -- player just did a /reload inside the dungeon), so we don't wrongly close
+    -- a run that is actually still going.
+    if not (self.session and self.session.type == "M+") then return end
+
+    local stillActive = false
+    if C_ChallengeMode and C_ChallengeMode.GetActiveChallengeMapID then
+        local ok, mapID = pcall(C_ChallengeMode.GetActiveChallengeMapID)
+        if ok and mapID then stillActive = true end
+    end
+
+    if not stillActive then
+        self:FinishMythicPlusSession(false, true)
+    end
 end
 
 

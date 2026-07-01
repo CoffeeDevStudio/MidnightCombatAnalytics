@@ -108,8 +108,29 @@ function MCA:SafeOpenReport(report, forceImmediate)
     -- case can hang indefinitely (the event may never fire cleanly before the
     -- instance teleport), which is why the report previously only appeared
     -- once the next key's pull ended combat. Skip the lockdown wait here.
+    --
+    -- An abandon (especially "vote to abandon") also teleports the player to a
+    -- new zone, so opening the report on a fixed short timer can fire mid
+    -- loading-screen. Wait for the next PLAYER_ENTERING_WORLD (zone load done)
+    -- and open shortly after, with a timer fallback in case no zone change
+    -- happens (e.g. a plain key reset in place).
     if forceImmediate then
-        C_Timer.After(0.5, openReport)
+        local opened = false
+        local function openOnce()
+            if opened then return end
+            opened = true
+            openReport()
+        end
+
+        local waitFrame = CreateFrame("Frame")
+        waitFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+        waitFrame:SetScript("OnEvent", function(self)
+            self:UnregisterAllEvents()
+            C_Timer.After(0.5, openOnce)
+        end)
+
+        -- Fallback: no zone change / event missed -> open anyway.
+        C_Timer.After(3.0, openOnce)
         return
     end
 
