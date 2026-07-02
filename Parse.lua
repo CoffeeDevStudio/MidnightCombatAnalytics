@@ -105,9 +105,85 @@ local function getEncounterEntry(data)
     return MCA_Benchmarks.encounters[encID]
 end
 
--- Interpolate a player value against the 4-anchor curve.
--- Anchors (approximate): median = 50th, p75 = 75th, p95 = 95th, top = 99th.
+-- Percentile keys the v3 generator writes into each spec entry, from top to
+-- bottom. Also drives the class-fallback aggregation below. The addon reads
+-- MCA_Benchmarks.percentiles if present, otherwise falls back to this list.
+local DEFAULT_CURVE_PERCENTILES = {99, 95, 90, 85, 75, 65, 50, 40, 30, 20, 10, 5, 1}
+
+local function getCurvePercentiles()
+    if MCA_Benchmarks and type(MCA_Benchmarks.percentiles) == "table"
+       and #MCA_Benchmarks.percentiles > 0 then
+        return MCA_Benchmarks.percentiles
+    end
+    return DEFAULT_CURVE_PERCENTILES
+end
+
+-- Detect whether a ref uses the v3 curve (multiple pXX fields) or the older
+-- v2 4-anchor shape (top/p95/p75/median).
+local function refHasCurve(ref)
+    if not ref then return false end
+    local pcts = getCurvePercentiles()
+    for _, p in ipairs(pcts) do
+        if ref["p" .. p] then return true end
+    end
+    return false
+end
+
+-- Interpolate value against a v3 percentile curve. Percentiles are in the
+-- ref as keys "p99", "p95", ... in decreasing order matching decreasing DPS.
 -- Returns 0..99.
+local function percentileFromCurve(value, ref)
+    if not ref or not value or value <= 0 then return 0 end
+    local pcts = getCurvePercentiles()
+
+    -- Build ordered anchor list [{p=99, v=top}, {p=95, v=...}, ...] using
+    -- only percentiles that actually have a value in this ref.
+    local anchors = {}
+    -- Top anchor (>= p99 value) — always add so the "top" ceiling clamps.
+    if ref.top and ref.top > 0 then
+        anchors[#anchors + 1] = { p = 99, v = ref.top }
+    end
+    for _, p in ipairs(pcts) do
+        local v = ref["p" .. p]
+        if type(v) == "number" and v > 0 then
+            -- Overwrite the top anchor's p99 if we also have an explicit p99.
+            if p == 99 and #anchors > 0 and anchors[1].p == 99 then
+                anchors[1].v = v
+            else
+                anchors[#anchors + 1] = { p = p, v = v }
+            end
+        end
+    end
+
+    if #anchors == 0 then return 0 end
+
+    -- Anchors are ordered by descending percentile (99 first, then 95, 90,
+    -- ..., 1) and each anchor's DPS should also be descending because higher
+    -- percentile = better rank = higher DPS.
+    if value >= anchors[1].v then
+        return anchors[1].p
+    end
+
+    -- Find the bracket [hi, lo] such that lo.v <= value < hi.v.
+    for i = 1, #anchors - 1 do
+        local hi = anchors[i]
+        local lo = anchors[i + 1]
+        if value < hi.v and value >= lo.v then
+            local span = hi.v - lo.v
+            if span <= 0 then return lo.p end
+            local t = (value - lo.v) / span
+            return math.floor(lo.p + t * (hi.p - lo.p) + 0.5)
+        end
+    end
+
+    -- Value is below the lowest anchor: linearly to 0 from the lowest bucket.
+    local lowest = anchors[#anchors]
+    if lowest.v <= 0 then return 0 end
+    return math.floor(lowest.p * (value / lowest.v) + 0.5)
+end
+
+-- v2 fallback: interpolate against 4 anchors (top / p95 / p75 / median).
+-- Used only if the loaded MCA_Benchmarks is an older schema.
 local function percentileFromAnchors(value, ref)
     if not ref or not value or value <= 0 then return 0 end
     local median, p75, p95, top = ref.median, ref.p75, ref.p95, ref.top
@@ -116,52 +192,58 @@ local function percentileFromAnchors(value, ref)
     if value >= top then
         return 99
     elseif value >= p95 then
-        -- 95..99
         local span = top - p95
         if span <= 0 then return 95 end
         return math.floor(95 + ((value - p95) / span) * 4 + 0.5)
     elseif value >= p75 then
-        -- 75..95
         local span = p95 - p75
         if span <= 0 then return 75 end
         return math.floor(75 + ((value - p75) / span) * 20 + 0.5)
     elseif value >= median then
-        -- 50..75
         local span = p75 - median
         if span <= 0 then return 50 end
         return math.floor(50 + ((value - median) / span) * 25 + 0.5)
     else
-        -- 0..50 (linear from 0 to median)
         if median <= 0 then return 0 end
         return math.floor((value / median) * 50 + 0.5)
     end
 end
 
+local function computePercentile(value, ref)
+    if refHasCurve(ref) then
+        return percentileFromCurve(value, ref)
+    end
+    return percentileFromAnchors(value, ref)
+end
+
 -- Given a class token (WoW) + role, return the aggregated reference by
 -- averaging every spec entry of that class in the wanted metric.
--- Used when the player's specific spec is not known.
+-- Used when the player's specific spec is not known. Handles both the v2
+-- 4-anchor schema and the v3 percentile-curve schema transparently by
+-- averaging whatever numeric fields it finds.
 local function classFallbackRef(diffEntry, wclClass, wantMetric)
     if not diffEntry then return nil end
     local prefix = wclClass .. "-"
-    local top, p95, p75, med, n = 0, 0, 0, 0, 0
+    local sums, count = {}, 0
+
     for key, ref in pairs(diffEntry) do
         if type(key) == "string" and key:sub(1, #prefix) == prefix and ref.metric == wantMetric then
-            top = top + (ref.top or 0)
-            p95 = p95 + (ref.p95 or 0)
-            p75 = p75 + (ref.p75 or 0)
-            med = med + (ref.median or 0)
-            n = n + 1
+            count = count + 1
+            for k, v in pairs(ref) do
+                if type(v) == "number" then
+                    sums[k] = (sums[k] or 0) + v
+                end
+            end
         end
     end
-    if n == 0 then return nil end
-    return {
-        top    = top / n,
-        p95    = p95 / n,
-        p75    = p75 / n,
-        median = med / n,
-        metric = wantMetric,
-        sample = n,
-    }
+
+    if count == 0 then return nil end
+
+    local avg = { metric = wantMetric, sample = count }
+    for k, total in pairs(sums) do
+        avg[k] = total / count
+    end
+    return avg
 end
 
 -- Public: get the reference row {top,p95,p75,median,metric} for a player
@@ -212,7 +294,7 @@ function MCA:ComputeLocalParse(player, data)
     end
     if not value or value <= 0 then return 0, source end
 
-    return percentileFromAnchors(value, ref), source
+    return computePercentile(value, ref), source
 end
 
 -- Public: parse color, mirrors the WCL palette used by GetRatingColor.
